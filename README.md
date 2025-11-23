@@ -33,7 +33,7 @@ ontology-search/
 
 # Instalar dependencias
 pip install -r requirements.txt
-```
+
 
 
 ### ▶️ Ejecución
