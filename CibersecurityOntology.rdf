@@ -1,0 +1,1300 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:owl="http://www.w3.org/2002/07/owl#"
+         xml:base="http://example.org/cybersecurity"
+         xmlns="http://example.org/cybersecurity#">
+
+<owl:Ontology rdf:about="http://example.org/cybersecurity">
+  <owl:versionIRI rdf:resource="http://example.org/cybersecurity/2.0"/>
+  <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ontología de Ciberseguridad Enriquecida - Versión 2.0 con datos extendidos</rdfs:comment>
+</owl:Ontology>
+
+<owl:ObjectProperty rdf:about="#afectaA">
+  <rdfs:domain rdf:resource="#Amenaza"/>
+  <rdfs:range rdf:resource="#ObjetivoSeguridad"/>
+  <rdfs:range rdf:resource="#Victima"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#analizaA">
+  <rdfs:domain rdf:resource="#Rol"/>
+  <rdfs:range rdf:resource="#SistemaComprometido"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#atacaA">
+  <rdfs:domain rdf:resource="#Hacker"/>
+  <rdfs:range rdf:resource="#Victima"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#esRealizadoPor">
+  <owl:inverseOf rdf:resource="#realizaUn"/>
+  <rdfs:domain rdf:resource="#MetodoSeguridad"/>
+  <rdfs:range rdf:resource="#Ofensivo"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#realizaUn">
+  <rdfs:domain rdf:resource="#Ofensivo"/>
+  <rdfs:range rdf:resource="#MetodoSeguridad"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#explota">
+  <rdfs:domain rdf:resource="#Hacker"/>
+  <rdfs:domain rdf:resource="#Ofensivo"/>
+  <rdfs:range>
+    <owl:Restriction>
+      <owl:onProperty rdf:resource="#tipoVulnerabilidad"/>
+      <owl:someValuesFrom rdf:resource="http://www.w3.org/2002/07/owl#rational"/>
+    </owl:Restriction>
+  </rdfs:range>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#gestiona">
+  <rdfs:domain rdf:resource="#Gestion"/>
+  <rdfs:range rdf:resource="#SistemaComprometido"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#implementaUn">
+  <rdfs:domain rdf:resource="#Gestion"/>
+  <rdfs:range rdf:resource="#MetodoSeguridad"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#infectaA">
+  <rdfs:domain rdf:resource="#Malware"/>
+  <rdfs:range rdf:resource="#SistemaComprometido"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#instalaUn">
+  <rdfs:domain rdf:resource="#UsuarioFinal"/>
+  <rdfs:range rdf:resource="#MetodoSeguridad"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#mitiga">
+  <rdfs:domain rdf:resource="#MetodoSeguridad"/>
+  <rdfs:range rdf:resource="#Malware"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#protegeA">
+  <rdfs:domain rdf:resource="#Defensivo"/>
+  <rdfs:range rdf:resource="#SistemaComprometido"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#respondeA">
+  <rdfs:domain rdf:resource="#Defensivo"/>
+  <rdfs:range rdf:resource="#Amenaza"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#sePropagaPor">
+  <rdfs:domain rdf:resource="#Malware"/>
+  <rdfs:range>
+    <owl:Restriction>
+      <owl:onProperty rdf:resource="#vectorInfeccion"/>
+      <owl:someValuesFrom rdf:resource="http://www.w3.org/2002/07/owl#rational"/>
+    </owl:Restriction>
+  </rdfs:range>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#usaMalware">
+  <rdfs:domain rdf:resource="#Hacker"/>
+  <rdfs:range rdf:resource="#Malware"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#tieneVulnerabilidad">
+  <rdfs:domain rdf:resource="#SistemaComprometido"/>
+  <rdfs:range rdf:resource="#Vulnerabilidad"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#explotaVulnerabilidad">
+  <rdfs:domain rdf:resource="#Hacker"/>
+  <rdfs:range rdf:resource="#Vulnerabilidad"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#corrigeVulnerabilidad">
+  <rdfs:domain rdf:resource="#Defensivo"/>
+  <rdfs:range rdf:resource="#Vulnerabilidad"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#perteneceAOrganizacion">
+  <rdfs:domain rdf:resource="#UsuarioFinal"/>
+  <rdfs:range rdf:resource="#Organizacion"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#operaEnSistema">
+  <rdfs:domain rdf:resource="#UsuarioFinal"/>
+  <rdfs:range rdf:resource="#SistemaComprometido"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#generaIncidente">
+  <rdfs:domain rdf:resource="#Amenaza"/>
+  <rdfs:range rdf:resource="#Incidente"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#investigaIncidente">
+  <rdfs:domain rdf:resource="#Defensivo"/>
+  <rdfs:range rdf:resource="#Incidente"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#afectaConfidencialidad">
+  <rdfs:domain rdf:resource="#Amenaza"/>
+  <rdfs:range rdf:resource="#Confidencialidad"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#afectaIntegridad">
+  <rdfs:domain rdf:resource="#Amenaza"/>
+  <rdfs:range rdf:resource="#Integridad"/>
+</owl:ObjectProperty>
+
+<owl:ObjectProperty rdf:about="#afectaDisponibilidad">
+  <rdfs:domain rdf:resource="#Amenaza"/>
+  <rdfs:range rdf:resource="#Disponibilidad"/>
+</owl:ObjectProperty>
+
+<owl:DatatypeProperty rdf:about="#tipoVulnerabilidad">
+  <rdfs:domain rdf:resource="#SistemaComprometido"/>
+  <rdfs:range>
+    <rdfs:Datatype>
+      <owl:oneOf>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">DatosSinCifrar</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Desconocida</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">SQL inyeccion</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Spoofing</rdf:first>
+        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+      </owl:oneOf>
+    </rdfs:Datatype>
+  </rdfs:range>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#vectorInfeccion">
+  <rdfs:domain rdf:resource="#Malware"/>
+  <rdfs:range>
+    <rdfs:Datatype>
+      <owl:oneOf>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Descarga</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Email</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">USB</rdf:first>
+        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+      </owl:oneOf>
+    </rdfs:Datatype>
+  </rdfs:range>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#criticidad">
+  <rdfs:domain rdf:resource="#Malware"/>
+  <rdfs:range>
+    <rdfs:Datatype>
+      <owl:oneOf>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Alta</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Baja</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Media</rdf:first>
+        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+      </owl:oneOf>
+    </rdfs:Datatype>
+  </rdfs:range>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#herramientasUsadas">
+  <rdfs:domain rdf:resource="#Hacker"/>
+  <rdfs:range>
+    <rdfs:Datatype>
+      <owl:oneOf>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Hydra</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Metasploit</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Nmap</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">OpenVAS</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">SQLmap</rdf:first>
+        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+      </owl:oneOf>
+    </rdfs:Datatype>
+  </rdfs:range>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#nivelRiesgo">
+  <rdfs:domain rdf:resource="#Amenaza"/>
+  <rdfs:range>
+    <rdfs:Datatype>
+      <owl:oneOf>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">10</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">2</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">5</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">6</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">7</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">8</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">9</rdf:first>
+        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+      </owl:oneOf>
+    </rdfs:Datatype>
+  </rdfs:range>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#tipoEspecialidadDefensiva">
+  <rdfs:domain rdf:resource="#Defensivo"/>
+  <rdfs:range>
+    <rdfs:Datatype>
+      <owl:oneOf>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Blue Team</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">SOC Analyst</rdf:first>
+        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+      </owl:oneOf>
+    </rdfs:Datatype>
+  </rdfs:range>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#tipoEspecialidadGestion">
+  <rdfs:domain rdf:resource="#Gestion"/>
+  <rdfs:range>
+    <rdfs:Datatype>
+      <owl:oneOf>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">CISO</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">CTO</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ResponsableSerguridad</rdf:first>
+        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+      </owl:oneOf>
+    </rdfs:Datatype>
+  </rdfs:range>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#tipoEspecialidadOfensiva">
+  <rdfs:domain rdf:resource="#Ofensivo"/>
+  <rdfs:range>
+    <rdfs:Datatype>
+      <owl:oneOf>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">HackingEtico</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pentester</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">RedTeam</rdf:first>
+        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+      </owl:oneOf>
+    </rdfs:Datatype>
+  </rdfs:range>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#tipoHacker">
+  <rdfs:domain rdf:resource="#Hacker"/>
+  <rdfs:range>
+    <rdfs:Datatype>
+      <owl:oneOf>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Externo</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Interno</rdf:first>
+        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+      </owl:oneOf>
+    </rdfs:Datatype>
+  </rdfs:range>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#tipoMalware">
+  <rdfs:domain rdf:resource="#Malware"/>
+  <rdfs:range>
+    <rdfs:Datatype>
+      <owl:oneOf>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Adware</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ransomware</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Spyware</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Trojan</rdf:first>
+        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+      </owl:oneOf>
+    </rdfs:Datatype>
+  </rdfs:range>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#tipoMetodoSeg">
+  <rdfs:domain rdf:resource="#MetodoSeguridad"/>
+  <rdfs:range>
+    <rdfs:Datatype>
+      <owl:oneOf>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">A2P</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Antivirus</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Firewall</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pentest</rdf:first>
+        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+      </owl:oneOf>
+    </rdfs:Datatype>
+  </rdfs:range>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#tipoSistema">
+  <rdfs:domain rdf:resource="#SistemaComprometido"/>
+  <rdfs:range>
+    <rdfs:Datatype>
+      <owl:oneOf>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">App</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Base de datos</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">PaginaWeb</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Red</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Servidor</rdf:first>
+        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+      </owl:oneOf>
+    </rdfs:Datatype>
+  </rdfs:range>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#tipoUsuario">
+  <rdfs:domain rdf:resource="#UsuarioFinal"/>
+  <rdfs:range>
+    <rdfs:Datatype>
+      <owl:oneOf>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Cliente</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Empleado</rdf:first>
+        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+      </owl:oneOf>
+    </rdfs:Datatype>
+  </rdfs:range>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#fechaDescubrimiento">
+  <rdfs:domain rdf:resource="#Vulnerabilidad"/>
+  <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#severidadCVSS">
+  <rdfs:domain rdf:resource="#Vulnerabilidad"/>
+  <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#float"/>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#fechaIncidente">
+  <rdfs:domain rdf:resource="#Incidente"/>
+  <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#dateTime"/>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#estadoIncidente">
+  <rdfs:domain rdf:resource="#Incidente"/>
+  <rdfs:range>
+    <rdfs:Datatype>
+      <owl:oneOf>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Abierto</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">En Investigación</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Resuelto</rdf:first>
+        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+      </owl:oneOf>
+    </rdfs:Datatype>
+  </rdfs:range>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#impactoEconomico">
+  <rdfs:domain rdf:resource="#Incidente"/>
+  <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#descripcion">
+  <rdfs:domain rdf:resource="#Vulnerabilidad"/>
+  <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#fechaCreacion">
+  <rdfs:domain rdf:resource="#Malware"/>
+  <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+</owl:DatatypeProperty>
+
+<owl:Class rdf:about="#Amenaza">
+  <rdfs:subClassOf rdf:resource="#EntidadSeguridad"/>
+</owl:Class>
+
+<owl:Class rdf:about="#ObjetivoSeguridad">
+  <rdfs:subClassOf rdf:resource="#EntidadSeguridad"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Victima">
+  <rdfs:subClassOf rdf:resource="#EntidadSeguridad"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Rol">
+  <rdfs:subClassOf rdf:resource="#EntidadSeguridad"/>
+</owl:Class>
+
+<owl:Class rdf:about="#SistemaComprometido">
+  <rdfs:subClassOf rdf:resource="#Victima"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Hacker">
+  <rdfs:subClassOf rdf:resource="#Amenaza"/>
+</owl:Class>
+
+<owl:Class rdf:about="#MetodoSeguridad">
+  <rdfs:subClassOf rdf:resource="#Victima"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Ofensivo">
+  <rdfs:subClassOf rdf:resource="#Rol"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Gestion">
+  <rdfs:subClassOf rdf:resource="#Rol"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Malware">
+  <rdfs:subClassOf rdf:resource="#Amenaza"/>
+</owl:Class>
+
+<owl:Class rdf:about="#UsuarioFinal">
+  <rdfs:subClassOf rdf:resource="#Victima"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Defensivo">
+  <rdfs:subClassOf rdf:resource="#Rol"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Vulnerabilidad">
+  <rdfs:subClassOf rdf:resource="#EntidadSeguridad"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Organizacion">
+  <rdfs:subClassOf rdf:resource="#EntidadSeguridad"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Incidente">
+  <rdfs:subClassOf rdf:resource="#EntidadSeguridad"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Confidencialidad">
+  <rdfs:subClassOf rdf:resource="#ObjetivoSeguridad"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Integridad">
+  <rdfs:subClassOf rdf:resource="#ObjetivoSeguridad"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Disponibilidad">
+  <rdfs:subClassOf rdf:resource="#ObjetivoSeguridad"/>
+</owl:Class>
+
+<owl:Class rdf:about="#EntidadSeguridad"/>
+
+<owl:Class rdf:about="#Autenticacion">
+  <rdfs:subClassOf rdf:resource="#ObjetivoSeguridad"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Contramedida">
+  <rdfs:subClassOf rdf:resource="#MetodoSeguridad"/>
+</owl:Class>
+
+<owl:NamedIndividual rdf:about="#AlanHackerEtico">
+  <rdf:type rdf:resource="#Ofensivo"/>
+  <tipoEspecialidadOfensiva rdf:datatype="http://www.w3.org/2001/XMLSchema#string">HackingEtico</tipoEspecialidadOfensiva>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#AnaBlueTeam">
+  <rdf:type rdf:resource="#Defensivo"/>
+  <tipoEspecialidadDefensiva rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Blue Team</tipoEspecialidadDefensiva>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#AntivirusAVAST">
+  <rdf:type rdf:resource="#MetodoSeguridad"/>
+  <mitiga rdf:resource="#SpywareX"/>
+  <tipoMetodoSeg rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Antivirus</tipoMetodoSeg>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#SpywareX">
+  <rdf:type rdf:resource="#Malware"/>
+  <afectaA rdf:resource="#ConfidencialidadEmpresaA"/>
+  <tipoMalware rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Spyware</tipoMalware>
+  <criticidad rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Media</criticidad>
+  <vectorInfeccion rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Descarga</vectorInfeccion>
+  <nivelRiesgo rdf:datatype="http://www.w3.org/2001/XMLSchema#int">6</nivelRiesgo>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#ConfidencialidadEmpresaA">
+  <rdf:type rdf:resource="#Confidencialidad"/>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#AutenticacionApp1">
+  <rdf:type rdf:resource="#Autenticacion"/>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#BaseDeDatosEmpresa1">
+  <rdf:type rdf:resource="#SistemaComprometido"/>
+  <tieneVulnerabilidad rdf:resource="#CVE-2024-5678"/>
+  <tipoSistema rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Base de datos</tipoSistema>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#CVE-2024-5678">
+  <rdf:type rdf:resource="#Vulnerabilidad"/>
+  <fechaDescubrimiento rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2024-02-20</fechaDescubrimiento>
+  <severidadCVSS rdf:datatype="http://www.w3.org/2001/XMLSchema#float">9.1</severidadCVSS>
+  <descripcion rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Vulnerabilidad crítica en sistema de base de datos</descripcion>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#CarlosInsider">
+  <rdf:type rdf:resource="#Hacker"/>
+  <nivelRiesgo rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">8.0</nivelRiesgo>
+  <tipoHacker rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Interno</tipoHacker>
+  <herramientasUsadas rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Metasploit</herramientasUsadas>
+  <herramientasUsadas rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Wireshark</herramientasUsadas>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#CooperativaSanPedro">
+  <rdf:type rdf:resource="#Victima"/>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#DisponibilidadBanco1">
+  <rdf:type rdf:resource="#Disponibilidad"/>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#EmpleadoEntelJose">
+  <rdf:type rdf:resource="#UsuarioFinal"/>
+  <perteneceAOrganizacion rdf:resource="#EmpresaTelecom"/>
+  <tipoUsuario rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Empleado</tipoUsuario>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#EmpresaTelecom">
+  <rdf:type rdf:resource="#Organizacion"/>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#ErikaCISO">
+  <rdf:type rdf:resource="#Gestion"/>
+  <gestiona rdf:resource="#RedEmpresaEntel"/>
+  <implementaUn rdf:resource="#SIEM_Splunk"/>
+  <tipoEspecialidadGestion rdf:datatype="http://www.w3.org/2001/XMLSchema#string">CISO</tipoEspecialidadGestion>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#RedEmpresaEntel">
+  <rdf:type rdf:resource="#SistemaComprometido"/>
+  <tipoSistema rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Red</tipoSistema>
+  <tipoVulnerabilidad rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Desconocida</tipoVulnerabilidad>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#SIEM_Splunk">
+  <rdf:type rdf:resource="#Contramedida"/>
+  <tipoMetodoSeg rdf:datatype="http://www.w3.org/2001/XMLSchema#string">A2P</tipoMetodoSeg>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#FirewallESET">
+  <rdf:type rdf:resource="#MetodoSeguridad"/>
+  <mitiga rdf:resource="#Troyano1"/>
+  <tipoMetodoSeg rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Firewall</tipoMetodoSeg>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Troyano1">
+  <rdf:type rdf:resource="#Malware"/>
+  <afectaA rdf:resource="#ServidorWeb1"/>
+  <afectaIntegridad rdf:resource="#IntegridadEmpresaY"/>
+  <nivelRiesgo rdf:datatype="http://www.w3.org/2001/XMLSchema#int">9</nivelRiesgo>
+  <tipoMalware rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Trojan</tipoMalware>
+  <vectorInfeccion rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Descarga</vectorInfeccion>
+  <criticidad rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Alta</criticidad>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#ServidorWeb1">
+  <rdf:type rdf:resource="#SistemaComprometido"/>
+  <tieneVulnerabilidad rdf:resource="#CVE-2024-1234"/>
+  <tipoVulnerabilidad rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Desconocida</tipoVulnerabilidad>
+  <tipoSistema rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Servidor</tipoSistema>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#IntegridadEmpresaY">
+  <rdf:type rdf:resource="#Integridad"/>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#HackerAnonimous">
+  <rdf:type rdf:resource="#Hacker"/>
+  <atacaA rdf:resource="#UsuarioKaterine"/>
+  <usaMalware rdf:resource="#WannaCry"/>
+  <explotaVulnerabilidad rdf:resource="#CVE-2024-1234"/>
+  <generaIncidente rdf:resource="#IncidenteDDoSAtaque"/>
+  <nivelRiesgo rdf:datatype="http://www.w3.org/2001/XMLSchema#int">7</nivelRiesgo>
+  <tipoHacker rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Externo</tipoHacker>
+  <herramientasUsadas rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Nmap</herramientasUsadas>
+  <herramientasUsadas rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Metasploit</herramientasUsadas>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#UsuarioKaterine">
+  <rdf:type rdf:resource="#UsuarioFinal"/>
+  <perteneceAOrganizacion rdf:resource="#EmpresaTecnologicaXYZ"/>
+  <tipoUsuario rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Cliente</tipoUsuario>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#WannaCry">
+  <rdf:type rdf:resource="#Malware"/>
+  <afectaA rdf:resource="#DisponibilidadBanco1"/>
+  <afectaDisponibilidad rdf:resource="#DisponibilidadBanco1"/>
+  <tipoMalware rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ransomware</tipoMalware>
+  <criticidad rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Alta</criticidad>
+  <vectorInfeccion rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Email</vectorInfeccion>
+  <nivelRiesgo rdf:datatype="http://www.w3.org/2001/XMLSchema#int">10</nivelRiesgo>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#CVE-2024-1234">
+  <rdf:type rdf:resource="#Vulnerabilidad"/>
+  <fechaDescubrimiento rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2024-01-15</fechaDescubrimiento>
+  <severidadCVSS rdf:datatype="http://www.w3.org/2001/XMLSchema#float">8.2</severidadCVSS>
+  <descripcion rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Vulnerabilidad de inyección SQL en sistema de autenticación</descripcion>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#IncidenteDDoSAtaque">
+  <rdf:type rdf:resource="#Incidente"/>
+  <fechaIncidente rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2024-03-18T09:15:00</fechaIncidente>
+  <estadoIncidente rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Resuelto</estadoIncidente>
+  <impactoEconomico rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">25000.0</impactoEconomico>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#EmpresaTecnologicaXYZ">
+  <rdf:type rdf:resource="#Organizacion"/>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#HackerCamila">
+  <rdf:type rdf:resource="#Hacker"/>
+  <atacaA rdf:resource="#CooperativaSanPedro"/>
+  <usaMalware rdf:resource="#WannaCry"/>
+  <nivelRiesgo rdf:datatype="http://www.w3.org/2001/XMLSchema#int">9</nivelRiesgo>
+  <tipoHacker rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Externo</tipoHacker>
+  <herramientasUsadas rdf:datatype="http://www.w3.org/2001/XMLSchema#string">SQLmap</herramientasUsadas>
+  <herramientasUsadas rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Burp Suite</herramientasUsadas>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#HackerJhair">
+  <rdf:type rdf:resource="#Hacker"/>
+  <tipoHacker rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Externo</tipoHacker>
+  <herramientasUsadas rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Hydra</herramientasUsadas>
+  <nivelRiesgo rdf:datatype="http://www.w3.org/2001/XMLSchema#int">6</nivelRiesgo>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#LuisSOC">
+  <rdf:type rdf:resource="#Defensivo"/>
+  <respondeA rdf:resource="#Troyano1"/>
+  <investigaIncidente rdf:resource="#IncidenteBrechaDatos"/>
+  <corrigeVulnerabilidad rdf:resource="#CVE-2024-1234"/>
+  <tipoEspecialidadDefensiva rdf:datatype="http://www.w3.org/2001/XMLSchema#string">SOC Analyst</tipoEspecialidadDefensiva>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#IncidenteBrechaDatos">
+  <rdf:type rdf:resource="#Incidente"/>
+  <fechaIncidente rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2024-03-15T14:30:00</fechaIncidente>
+  <estadoIncidente rdf:datatype="http://www.w3.org/2001/XMLSchema#string">En Investigación</estadoIncidente>
+  <impactoEconomico rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">50000.0</impactoEconomico>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#MicaelaRedTeam">
+  <rdf:type rdf:resource="#Ofensivo"/>
+  <realizaUn rdf:resource="#PentestingAvanzado"/>
+  <tipoEspecialidadOfensiva rdf:datatype="http://www.w3.org/2001/XMLSchema#string">RedTeam</tipoEspecialidadOfensiva>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#PentestingAvanzado">
+  <rdf:type rdf:resource="#MetodoSeguridad"/>
+  <esRealizadoPor rdf:resource="#MicaelaRedTeam"/>
+  <tipoMetodoSeg rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pentest</tipoMetodoSeg>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#OscarCTO">
+  <rdf:type rdf:resource="#Gestion"/>
+  <implementaUn rdf:resource="#FirewallESET"/>
+  <tipoEspecialidadGestion rdf:datatype="http://www.w3.org/2001/XMLSchema#string">CTO</tipoEspecialidadGestion>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Pentesting">
+  <rdf:type rdf:resource="#MetodoSeguridad"/>
+  <esRealizadoPor rdf:resource="#YamilPentester"/>
+  <tipoMetodoSeg rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pentest</tipoMetodoSeg>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#YamilPentester">
+  <rdf:type rdf:resource="#Ofensivo"/>
+  <realizaUn rdf:resource="#Pentesting"/>
+  <tipoEspecialidadOfensiva rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pentester</tipoEspecialidadOfensiva>
+  <herramientasUsadas rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Nmap</herramientasUsadas>
+  <herramientasUsadas rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Metasploit</herramientasUsadas>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Ransomware1">
+  <rdf:type rdf:resource="#Malware"/>
+  <afectaConfidencialidad rdf:resource="#ConfidencialidadEmpresaA"/>
+  <nivelRiesgo rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">8.0</nivelRiesgo>
+  <tipoMalware rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ransomware</tipoMalware>
+  <vectorInfeccion rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Email</vectorInfeccion>
+  <criticidad rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Alta</criticidad>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#ServidorBanco1">
+  <rdf:type rdf:resource="#SistemaComprometido"/>
+  <tieneVulnerabilidad rdf:resource="#CVE-2024-9012"/>
+  <tipoSistema rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Servidor</tipoSistema>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#CVE-2024-9012">
+  <rdf:type rdf:resource="#Vulnerabilidad"/>
+  <fechaDescubrimiento rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2024-03-10</fechaDescubrimiento>
+  <severidadCVSS rdf:datatype="http://www.w3.org/2001/XMLSchema#float">7.5</severidadCVSS>
+  <descripcion rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Vulnerabilidad de ejecución remota de código</descripcion>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#UsuarioCarlos">
+  <rdf:type rdf:resource="#UsuarioFinal"/>
+  <instalaUn rdf:resource="#AntivirusAVAST"/>
+  <perteneceAOrganizacion rdf:resource="#BancoNacional"/>
+  <tipoUsuario rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Cliente</tipoUsuario>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#BancoNacional">
+  <rdf:type rdf:resource="#Organizacion"/>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#HospitalCentral">
+  <rdf:type rdf:resource="#Organizacion"/>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#CVE-2024-3456">
+  <rdf:type rdf:resource="#Vulnerabilidad"/>
+  <fechaDescubrimiento rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2024-04-05</fechaDescubrimiento>
+  <severidadCVSS rdf:datatype="http://www.w3.org/2001/XMLSchema#float">6.8</severidadCVSS>
+  <descripcion rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Vulnerabilidad de desbordamiento de búfer</descripcion>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#IncidentePhishing">
+  <rdf:type rdf:resource="#Incidente"/>
+  <fechaIncidente rdf:datatype="http://www.w3.org/2001/XMLSchema#dateTime">2024-04-01T11:20:00</fechaIncidente>
+  <estadoIncidente rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Abierto</estadoIncidente>
+  <impactoEconomico rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">15000.0</impactoEconomico>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#IDS_Snort">
+  <rdf:type rdf:resource="#Contramedida"/>
+  <mitiga rdf:resource="#Troyano1"/>
+  <mitiga rdf:resource="#SpywareX"/>
+  <tipoMetodoSeg rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Firewall</tipoMetodoSeg>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#AntivirusKaspersky">
+  <rdf:type rdf:resource="#Contramedida"/>
+  <mitiga rdf:resource="#Ransomware1"/>
+  <mitiga rdf:resource="#WannaCry"/>
+  <tipoMetodoSeg rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Antivirus</tipoMetodoSeg>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#HackerMaria">
+  <rdf:type rdf:resource="#Hacker"/>
+  <explotaVulnerabilidad rdf:resource="#CVE-2024-1234"/>
+  <generaIncidente rdf:resource="#IncidenteBrechaDatos"/>
+  <atacaA rdf:resource="#BancoNacional"/>
+  <tipoHacker rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Externo</tipoHacker>
+  <herramientasUsadas rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Metasploit</herramientasUsadas>
+  <herramientasUsadas rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Burp Suite</herramientasUsadas>
+  <nivelRiesgo rdf:datatype="http://www.w3.org/2001/XMLSchema#int">7</nivelRiesgo>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#HackerPedro">
+  <rdf:type rdf:resource="#Hacker"/>
+  <atacaA rdf:resource="#EmpresaTecnologicaXYZ"/>
+  <tipoHacker rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Interno</tipoHacker>
+  <herramientasUsadas rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Wireshark</herramientasUsadas>
+  <herramientasUsadas rdf:datatype="http://www.w3.org/2001/XMLSchema#string">John the Ripper</herramientasUsadas>
+  <nivelRiesgo rdf:datatype="http://www.w3.org/2001/XMLSchema#int">6</nivelRiesgo>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Emotet">
+  <rdf:type rdf:resource="#Malware"/>
+  <afectaConfidencialidad rdf:resource="#ConfidencialidadEmpresaA"/>
+  <tipoMalware rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Trojan</tipoMalware>
+  <criticidad rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Alta</criticidad>
+  <vectorInfeccion rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Email</vectorInfeccion>
+  <nivelRiesgo rdf:datatype="http://www.w3.org/2001/XMLSchema#int">9</nivelRiesgo>
+  <fechaCreacion rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2014-06-01</fechaCreacion>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Stuxnet">
+  <rdf:type rdf:resource="#Malware"/>
+  <afectaIntegridad rdf:resource="#IntegridadEmpresaY"/>
+  <tipoMalware rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Worm</tipoMalware>
+  <criticidad rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Alta</criticidad>
+  <vectorInfeccion rdf:datatype="http://www.w3.org/2001/XMLSchema#string">USB</vectorInfeccion>
+  <nivelRiesgo rdf:datatype="http://www.w3.org/2001/XMLSchema#int">10</nivelRiesgo>
+  <fechaCreacion rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2010-06-01</fechaCreacion>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Zeus">
+  <rdf:type rdf:resource="#Malware"/>
+  <tipoMalware rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Trojan</tipoMalware>
+  <criticidad rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Media</criticidad>
+  <vectorInfeccion rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Descarga</vectorInfeccion>
+  <nivelRiesgo rdf:datatype="http://www.w3.org/2001/XMLSchema#int">7</nivelRiesgo>
+  <fechaCreacion rdf:datatype="http://www.w3.org/2001/XMLSchema#date">2007-07-01</fechaCreacion>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#APITiendaOnline">
+  <rdf:type rdf:resource="#SistemaComprometido"/>
+  <tieneVulnerabilidad rdf:resource="#CVE-2024-5678"/>
+  <tipoSistema rdf:datatype="http://www.w3.org/2001/XMLSchema#string">App</tipoSistema>
+  <tipoVulnerabilidad rdf:datatype="http://www.w3.org/2001/XMLSchema#string">SQL inyeccion</tipoVulnerabilidad>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#ServidorCorreo">
+  <rdf:type rdf:resource="#SistemaComprometido"/>
+  <tieneVulnerabilidad rdf:resource="#CVE-2024-3456"/>
+  <tipoSistema rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Servidor</tipoSistema>
+  <tipoVulnerabilidad rdf:datatype="http://www.w3.org/2001/XMLSchema#string">DatosSinCifrar</tipoVulnerabilidad>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#AppMovilBanco">
+  <rdf:type rdf:resource="#SistemaComprometido"/>
+  <tipoSistema rdf:datatype="http://www.w3.org/2001/XMLSchema#string">App</tipoSistema>
+  <tipoVulnerabilidad rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Desconocida</tipoVulnerabilidad>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#AdminSistema">
+  <rdf:type rdf:resource="#UsuarioFinal"/>
+  <perteneceAOrganizacion rdf:resource="#BancoNacional"/>
+  <operaEnSistema rdf:resource="#ServidorBanco1"/>
+  <instalaUn rdf:resource="#AntivirusKaspersky"/>
+  <tipoUsuario rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Empleado</tipoUsuario>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#DesarrolladorApp">
+  <rdf:type rdf:resource="#UsuarioFinal"/>
+  <perteneceAOrganizacion rdf:resource="#EmpresaTecnologicaXYZ"/>
+  <operaEnSistema rdf:resource="#APITiendaOnline"/>
+  <tipoUsuario rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Empleado</tipoUsuario>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#UsuarioHospital">
+  <rdf:type rdf:resource="#UsuarioFinal"/>
+  <perteneceAOrganizacion rdf:resource="#HospitalCentral"/>
+  <tipoUsuario rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Empleado</tipoUsuario>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#AnalistaLaura">
+  <rdf:type rdf:resource="#Defensivo"/>
+  <investigaIncidente rdf:resource="#IncidenteBrechaDatos"/>
+  <corrigeVulnerabilidad rdf:resource="#CVE-2024-1234"/>
+  <respondeA rdf:resource="#HackerMaria"/>
+  <tipoEspecialidadDefensiva rdf:datatype="http://www.w3.org/2001/XMLSchema#string">SOC Analyst</tipoEspecialidadDefensiva>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#IngenieroSeguridad">
+  <rdf:type rdf:resource="#Defensivo"/>
+  <implementaUn rdf:resource="#IDS_Snort"/>
+  <protegeA rdf:resource="#ServidorBanco1"/>
+  <corrigeVulnerabilidad rdf:resource="#CVE-2024-9012"/>
+  <tipoEspecialidadDefensiva rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Blue Team</tipoEspecialidadDefensiva>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#HackerEticoRoberto">
+  <rdf:type rdf:resource="#Ofensivo"/>
+  <realizaUn rdf:resource="#Pentesting"/>
+  <tipoEspecialidadOfensiva rdf:datatype="http://www.w3.org/2001/XMLSchema#string">HackingEtico</tipoEspecialidadOfensiva>
+  <herramientasUsadas rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Nmap</herramientasUsadas>
+  <herramientasUsadas rdf:datatype="http://www.w3.org/2001/XMLSchema#string">OpenVAS</herramientasUsadas>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#CryptoLocker">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">CryptoLocker</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Petyamalwarefamily">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">Petya (malware family)</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#TheRansomwareHuntingTeam">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">The Ransomware Hunting Team</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#ViceSociety">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">Vice Society</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#LockBit">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">LockBit</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Ransomware">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">Ransomware</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Akiraransomware">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">Akira (ransomware)</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#StargazerGoblin">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">Stargazer Goblin</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#UndergroundTeam">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">Underground Team</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#PGPCoder">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">PGPCoder</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#ParkJinHyok">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">Park Jin Hyok</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#AIDSTrojanhorse">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">AIDS (Trojan horse)</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Locky">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">Locky</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#KeRanger">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">KeRanger</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#BritishLibrarycyberattack">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">British Library cyberattack</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Rhysidahackergroup">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">Rhysida (hacker group)</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#2019Baltimoreransomwareattack">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">2019 Baltimore ransomware attack</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#KirkRansomware">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">Kirk Ransomware</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Rensenware">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">Rensenware</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Ryukransomware">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">Ryuk (ransomware)</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#CryptMix">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">CryptMix</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Atlantagovernmentransomwareattack">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">Atlanta government ransomware attack</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Royalcybergang">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">Royal (cyber gang)</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#BianLian">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">BianLian</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Dridex">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">Dridex</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#LinuxEncoder">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">Linux.Encoder</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#LogicLocker">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">LogicLocker</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#REvil">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">REvil</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Initialaccessbroker">
+  <rdf:type rdf:resource="#Malware"/>
+  <rdfs:label xml:lang="en">Initial access broker</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Ransomwareasaservice">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">Ransomware as a service</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#OperationSocialist">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">Operation Socialist</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#2015TalkTalkdatabreach">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">Daniel Kelley (hacker)</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Anonymoushackergroup">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">Anonymous (hacker group)</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#TitanRain">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">Titan Rain</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#ParadisePapers">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">Paradise Papers</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#OperationShadyRAT">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">Operation Shady RAT</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#Listofcyberattacks">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">List of cyberattacks</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#2009DDoSattacksagainstSouthKorea">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">2009 DDoS attacks against South Korea</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#2017Ukraineransomwareattacks">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">2017 Ukraine ransomware attacks</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#AuroraGeneratorTest">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">Aurora Generator Test</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#OperationAurora">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">Operation Aurora</rdfs:label>
+</owl:NamedIndividual>
+
+<owl:NamedIndividual rdf:about="#TV5Monde">
+  <rdf:type rdf:resource="#Amenaza"/>
+  <rdfs:label xml:lang="en">TV5Monde</rdfs:label>
+</owl:NamedIndividual>
+
+<rdf:Description rdf:about="http://www.w3.org/2001/XMLSchema#string">
+  <owl:equivalentClass>
+    <rdfs:Datatype>
+      <owl:oneOf>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Adware</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ransomware</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Spyware</rdf:first>
+        <rdf:rest>
+        <rdf:Description>
+      <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Troyano</rdf:first>
+        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+        </rdf:rest>
+        </rdf:Description>
+      </owl:oneOf>
+    </rdfs:Datatype>
+  </owl:equivalentClass>
+</rdf:Description>
+
+
+</rdf:RDF>

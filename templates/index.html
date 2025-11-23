@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motor de Búsqueda - Ontología de Ciberseguridad</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .search-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .search-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .language-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .lang-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .lang-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .lang-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #searchInput {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        #searchInput:focus {
+            border-color: #667eea;
+        }
+
+        #searchBtn {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        #searchBtn:hover {
+            transform: translateY(-2px);
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .filter-btn:hover {
+            border-color: #667eea;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .results-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .results-count {
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .source-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+        }
+
+        .source-stat {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .source-offline {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .source-online {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .result-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .result-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .result-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .result-type {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .type-class {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .type-property {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .type-individual {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .type-dbpedia {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .source-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        .source-offline-badge {
+            background: #e8f5e9;
+            color: #388e3c;
+            border: 1px solid #388e3c;
+        }
+
+        .source-online-badge {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #1976d2;
+        }
+
+        .result-comment {
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .result-relations {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .relation-tag {
+            display: inline-block;
+            padding: 5px 12px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            font-size: 0.85em;
+            color: #555;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .no-results-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            max-width: 800px;
+            margin: 50px auto;
+            border-radius: 15px;
+            padding: 30px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2em;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .detail-section {
+            margin-bottom: 25px;
+        }
+
+        .detail-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #667eea;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+
+        .detail-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .detail-list li {
+            padding: 8px 12px;
+            background: #f5f5f5;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .detail-list li:hover {
+            background: #e0e0e0;
+        }
+
+        .external-link {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #1976d2;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        .external-link:hover {
+            background: #1565c0;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            #searchBtn {
+                width: 100%;
+            }
+
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .results-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Motor de Búsqueda Ontológico</h1>
+            <p class="subtitle" id="subtitle">Búsqueda Híbrida: Ontología Local + DBpedia Online</p>
+        </header>
+
+        <div class="stats" id="stats">
+            <!-- Las estadísticas se cargarán aquí -->
+        </div>
+
+        <div class="search-container">
+            <div class="search-header">
+                <h2 id="searchTitle">Buscar en la Ontología</h2>
+                <div class="language-selector">
+                    <button class="lang-btn active" data-lang="es" onclick="changeLang('es')">🇪🇸 ES</button>
+                    <button class="lang-btn" data-lang="en" onclick="changeLang('en')">🇺🇸 EN</button>
+                </div>
+            </div>
+
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Ej: malware, ataque, firewall..." />
+                <button id="searchBtn" onclick="performSearch()">Buscar</button>
+            </div>
+
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all" onclick="setFilter('all')" id="filterAll">Todos</button>
+                <button class="filter-btn" data-filter="class" onclick="setFilter('class')" id="filterClass">Clases</button>
+                <button class="filter-btn" data-filter="property" onclick="setFilter('property')" id="filterProperty">Propiedades</button>
+                <button class="filter-btn" data-filter="individual" onclick="setFilter('individual')" id="filterIndividual">Individuos</button>
+            </div>
+        </div>
+
+        <div class="results-container" id="resultsContainer" style="display: none;">
+            <div class="results-header">
+                <h3 class="results-count" id="resultsCount"></h3>
+                <div class="source-stats" id="sourceStats"></div>
+            </div>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <div id="detailContent"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentLang = 'es';
+        let currentFilter = 'all';
+
+        const translations = {
+            es: {
+                subtitle: 'Búsqueda Híbrida: Ontología Local + DBpedia Online',
+                searchTitle: 'Buscar en la Ontología',
+                searchPlaceholder: 'Ej: malware, ataque, firewall...',
+                searchBtn: 'Buscar',
+                filterAll: 'Todos',
+                filterClass: 'Clases',
+                filterProperty: 'Propiedades',
+                filterIndividual: 'Individuos',
+                resultsFound: 'resultados encontrados',
+                noResults: 'No se encontraron resultados',
+                noResultsMsg: 'Intenta con otros términos de búsqueda',
+                loading: 'Buscando...',
+                parents: 'Superclases',
+                subclasses: 'Subclases',
+                domain: 'Dominio',
+                range: 'Rango',
+                classes: 'Clases',
+                instances: 'Instancias',
+                statClasses: 'Clases',
+                statProperties: 'Propiedades',
+                statIndividuals: 'Individuos',
+                offlineResults: 'Resultados Locales',
+                onlineResults: 'Resultados Online',
+                viewOnDBpedia: 'Ver en DBpedia'
+            },
+            en: {
+                subtitle: 'Hybrid Search: Local Ontology + DBpedia Online',
+                searchTitle: 'Search in Ontology',
+                searchPlaceholder: 'Ex: malware, attack, firewall...',
+                searchBtn: 'Search',
+                filterAll: 'All',
+                filterClass: 'Classes',
+                filterProperty: 'Properties',
+                filterIndividual: 'Individuals',
+                resultsFound: 'results found',
+                noResults: 'No results found',
+                noResultsMsg: 'Try different search terms',
+                loading: 'Searching...',
+                parents: 'Superclasses',
+                subclasses: 'Subclasses',
+                domain: 'Domain',
+                range: 'Range',
+                classes: 'Classes',
+                instances: 'Instances',
+                statClasses: 'Classes',
+                statProperties: 'Properties',
+                statIndividuals: 'Individuals',
+                offlineResults: 'Local Results',
+                onlineResults: 'Online Results',
+                viewOnDBpedia: 'View on DBpedia'
+            }
+        };
+
+        function changeLang(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.lang === lang) {
+                    btn.classList.add('active');
+                }
+            });
+            const t = translations[lang];
+            document.getElementById('subtitle').textContent = t.subtitle;
+            document.getElementById('searchTitle').textContent = t.searchTitle;
+            document.getElementById('searchInput').placeholder = t.searchPlaceholder;
+            document.getElementById('searchBtn').textContent = t.searchBtn;
+            document.getElementById('filterAll').textContent = t.filterAll;
+            document.getElementById('filterClass').textContent = t.filterClass;
+            document.getElementById('filterProperty').textContent = t.filterProperty;
+            document.getElementById('filterIndividual').textContent = t.filterIndividual;
+            loadStats();
+            const query = document.getElementById('searchInput').value;
+            if (query) {
+                performSearch();
+            }
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.filter === filter) {
+                    btn.classList.add('active');
+                }
+            });
+            const query = document.getElementById('searchInput').value;
+            if (query) {
+                performSearch();
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                const t = translations[currentLang];
+                const statsHtml = `
+                    <div class="stat-card">
+                        <div class="stat-number">${data.local.classes}</div>
+                        <div class="stat-label">${t.statClasses}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${data.local.object_properties + data.local.data_properties}</div>
+                        <div class="stat-label">${t.statProperties}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${data.local.individuals}</div>
+                        <div class="stat-label">${t.statIndividuals}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">🌐</div>
+                        <div class="stat-label">DBpedia Online</div>
+                    </div>
+                `;
+                document.getElementById('stats').innerHTML = statsHtml;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) {
+                return;
+            }
+            const resultsContainer = document.getElementById('resultsContainer');
+            const results = document.getElementById('results');
+            const t = translations[currentLang];
+            resultsContainer.style.display = 'block';
+            results.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>${t.loading}</p>
+                </div>
+            `;
+            try {
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&lang=${currentLang}&type=${currentFilter}`);
+                const data = await response.json();
+                
+                // Actualizar contador de resultados
+                document.getElementById('resultsCount').textContent = `${data.total} ${t.resultsFound}`;
+                
+                // Actualizar estadísticas de fuente
+                const sourceStatsHtml = `
+                    <span class="source-stat source-offline">💾 ${data.statistics.offline} ${t.offlineResults}</span>
+                    <span class="source-stat source-online">🌐 ${data.statistics.online} ${t.onlineResults}</span>
+                `;
+                document.getElementById('sourceStats').innerHTML = sourceStatsHtml;
+                
+                if (data.results.length === 0) {
+                    results.innerHTML = `
+                        <div class="no-results">
+                            <div class="no-results-icon">🔍</div>
+                            <h3>${t.noResults}</h3>
+                            <p>${t.noResultsMsg}</p>
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = data.results.map(result => createResultCard(result)).join('');
+                }
+            } catch (error) {
+                console.error('Error searching:', error);
+                results.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">⚠️</div>
+                        <h3>Error</h3>
+                        <p>Hubo un error al realizar la búsqueda</p>
+                    </div>
+                `;
+            }
+        }
+
+        function createResultCard(result) {
+            const typeClass = result.type === 'Clase' ? 'type-class' : 
+                             result.type === 'Individuo' ? 'type-individual' : 
+                             result.type === 'Propiedad' ? 'type-property' : 
+                             'type-dbpedia';
+            
+            const sourceBadge = result.source === 'online' ? 
+                '<span class="source-badge source-online-badge">🌐 Online</span>' : 
+                '<span class="source-badge source-offline-badge">💾 Offline</span>';
+            
+            let relations = '';
+            const t = translations[currentLang];
+            
+            if (result.parents && result.parents.length > 0) {
+                relations += result.parents.map(p => `<span class="relation-tag">↑ ${p}</span>`).join('');
+            }
+            if (result.subclasses && result.subclasses.length > 0) {
+                relations += result.subclasses.map(s => `<span class="relation-tag">↓ ${s}</span>`).join('');
+            }
+            if (result.domain && result.domain.length > 0) {
+                relations += result.domain.map(d => `<span class="relation-tag">${t.domain}: ${d}</span>`).join('');
+            }
+            if (result.range && result.range.length > 0) {
+                relations += result.range.map(r => `<span class="relation-tag">${t.range}: ${r}</span>`).join('');
+            }
+            if (result.classes && result.classes.length > 0) {
+                relations += result.classes.map(c => `<span class="relation-tag">⊂ ${c}</span>`).join('');
+            }
+            
+            return `
+                <div class="result-card" onclick="showDetails('${result.name}', '${result.source}')">
+                    <div class="result-header">
+                        <div>
+                            <div class="result-title">${result.label} ${sourceBadge}</div>
+                        </div>
+                        <span class="result-type ${typeClass}">${result.type}</span>
+                    </div>
+                    <div class="result-comment">${result.comment}</div>
+                    ${relations ? `<div class="result-relations">${relations}</div>` : ''}
+                </div>
+            `;
+        }
+
+        async function showDetails(entityName, source = 'offline') {
+            const modal = document.getElementById('detailModal');
+            const content = document.getElementById('detailContent');
+            const t = translations[currentLang];
+            content.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>${t.loading}</p>
+                </div>
+            `;
+            modal.style.display = 'block';
+            try {
+                const response = await fetch(`/api/details/${entityName}?lang=${currentLang}&source=${source}`);
+                const data = await response.json();
+                
+                let detailHtml = `
+                    <div class="detail-section">
+                        <div class="detail-title">${data.label}</div>
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                            <span class="result-type ${getTypeClass(data.type)}">${data.type}</span>
+                            ${data.source === 'online' ? 
+                              '<span class="source-badge source-online-badge">🌐 Fuente: DBpedia Online</span>' : 
+                              '<span class="source-badge source-offline-badge">💾 Fuente: Ontología Local</span>'}
+                        </div>
+                        <p style="margin-top: 15px;">${data.comment}</p>
+                        ${data.iri ? `<p style="color: #999; font-size: 0.9em; margin-top: 10px;">IRI: ${data.iri}</p>` : ''}
+                        ${data.external_link ? `<a href="${data.external_link}" target="_blank" class="external-link">${t.viewOnDBpedia}</a>` : ''}
+                    </div>
+                `;
+                
+                if (data.parents && data.parents.length > 0) {
+                    detailHtml += `
+                        <div class="detail-section">
+                            <div class="detail-label">${t.parents}:</div>
+                            <ul class="detail-list">
+                                ${data.parents.map(p => `<li onclick="showDetails('${p.name}', 'offline')">${p.label}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                if (data.subclasses && data.subclasses.length > 0) {
+                    detailHtml += `
+                        <div class="detail-section">
+                            <div class="detail-label">${t.subclasses}:</div>
+                            <ul class="detail-list">
+                                ${data.subclasses.map(s => `<li onclick="showDetails('${s.name}', 'offline')">${s.label}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                if (data.instances && data.instances.length > 0) {
+                    detailHtml += `
+                        <div class="detail-section">
+                            <div class="detail-label">${t.instances}:</div>
+                            <ul class="detail-list">
+                                ${data.instances.map(i => `<li onclick="showDetails('${i.name}', 'offline')">${i.label}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                if (data.domain && data.domain.length > 0) {
+                    detailHtml += `
+                        <div class="detail-section">
+                            <div class="detail-label">${t.domain}:</div>
+                            <ul class="detail-list">
+                                ${data.domain.map(d => `<li onclick="showDetails('${d.name}', 'offline')">${d.label}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                if (data.range && data.range.length > 0) {
+                    detailHtml += `
+                        <div class="detail-section">
+                            <div class="detail-label">${t.range}:</div>
+                            <ul class="detail-list">
+                                ${data.range.map(r => `<li onclick="showDetails('${r.name}', 'offline')">${r.label}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                if (data.classes && data.classes.length > 0) {
+                    detailHtml += `
+                        <div class="detail-section">
+                            <div class="detail-label">${t.classes}:</div>
+                            <ul class="detail-list">
+                                ${data.classes.map(c => `<li onclick="showDetails('${c.name}', 'offline')">${c.label}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                content.innerHTML = detailHtml;
+            } catch (error) {
+                console.error('Error loading details:', error);
+                content.innerHTML = '<p>Error al cargar los detalles</p>';
+            }
+        }
+
+        function getTypeClass(type) {
+            if (type === 'Clase') return 'type-class';
+            if (type === 'Individuo') return 'type-individual';
+            if (type === 'Propiedad') return 'type-property';
+            if (type === 'DBPedia' || type === 'Recurso DBpedia') return 'type-dbpedia';
+            return 'type-class';
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('detailModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        loadStats();
+    </script>
+</body>
+</html>
