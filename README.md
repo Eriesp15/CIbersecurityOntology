@@ -36,7 +36,8 @@ pip install -r requirements.txt
 
 
 
-### ▶️ Ejecución
+### 3. Ejecución
+# Ejecutar el comando
 
 ```bash
 python app.py
