@@ -178,7 +178,7 @@ def calculate_relevance(query, label, name, comment, entity_type):
     return score
 
 def search_dbpedia_online(query, lang='en', limit=10):
-    """Busca en DBpedia en línea y devuelve resultados formateados"""
+    """Busca en DBpedia limitado a dominios de ciberseguridad"""
     try:
         sparql = SPARQLWrapper(DBPEDIA_ENDPOINT)
         sparql.addCustomHttpHeader("User-Agent", "CybersecuritySearchBot/1.0")
@@ -187,18 +187,28 @@ def search_dbpedia_online(query, lang='en', limit=10):
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
         PREFIX dbo: <http://dbpedia.org/ontology/>
         PREFIX dct: <http://purl.org/dc/terms/>
+        PREFIX category: <http://dbpedia.org/resource/Category:>
 
         SELECT DISTINCT ?resource ?label ?abstract WHERE {{
           {{
             ?resource rdfs:label ?label .
             FILTER(CONTAINS(LCASE(?label), "{query.lower()}") && LANG(?label) = 'en')
+            
+            # Filtrar por categorías específicas de ciberseguridad
+            ?resource dct:subject ?category .
+            FILTER(
+              CONTAINS(LCASE(STR(?category)), "cyber") ||
+              CONTAINS(LCASE(STR(?category)), "security") ||
+              CONTAINS(LCASE(STR(?category)), "malware") ||
+              CONTAINS(LCASE(STR(?category)), "ransomware") ||
+              CONTAINS(LCASE(STR(?category)), "hacker") ||
+              CONTAINS(LCASE(STR(?category)), "vulnerability") ||
+              CONTAINS(LCASE(STR(?category)), "encryption") ||
+              CONTAINS(LCASE(STR(?category)), "computer_virus") ||
+              CONTAINS(LCASE(STR(?category)), "information_security")
+            )
+            
             OPTIONAL {{ ?resource dbo:abstract ?abstract . FILTER(LANG(?abstract) = 'en') }}
-          }}
-          UNION
-          {{
-            ?resource dbo:abstract ?abstract .
-            FILTER(CONTAINS(LCASE(?abstract), "{query.lower()}") && LANG(?abstract) = 'en')
-            ?resource rdfs:label ?label . FILTER(LANG(?label) = 'en')
           }}
         }}
         LIMIT {limit}
@@ -213,12 +223,10 @@ def search_dbpedia_online(query, lang='en', limit=10):
             resource_uri = result["resource"]["value"]
             resource_name = resource_uri.split("/")[-1]
             
-            # Mejorar la descripción
             comment = result.get("abstract", {}).get("value", "")
             if not comment:
-                comment = f"Recurso de seguridad relacionado con '{query}'"
+                comment = f"Recurso de ciberseguridad relacionado con '{query}'"
             else:
-                # Acortar descripción si es muy larga
                 if len(comment) > 200:
                     comment = comment[:197] + "..."
             
@@ -229,7 +237,7 @@ def search_dbpedia_online(query, lang='en', limit=10):
                 'comment': comment,
                 'source': 'online',
                 'uri': resource_uri,
-                'relevance': 45,  # Ligeramente menor que resultados locales
+                'relevance': 45,
                 'external_link': f"http://dbpedia.org/page/{resource_name}"
             }
             formatted_results.append(formatted_result)
