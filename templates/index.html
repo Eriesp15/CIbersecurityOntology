@@ -432,6 +432,59 @@
             background: #1565c0;
         }
 
+        /* Nuevos estilos para mejoras de multilingualidad */
+        .online-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #667eea;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
         @media (max-width: 768px) {
             h1 {
                 font-size: 1.8em;
@@ -460,7 +513,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Motor de Búsqueda Ontológico</h1>
+            <h1 id="mainTitle">Motor de Búsqueda Ontológico</h1>
             <p class="subtitle" id="subtitle">Búsqueda Híbrida: Ontología Local + DBpedia Online</p>
         </header>
 
@@ -488,6 +541,14 @@
                 <button class="filter-btn" data-filter="property" onclick="setFilter('property')" id="filterProperty">Propiedades</button>
                 <button class="filter-btn" data-filter="individual" onclick="setFilter('individual')" id="filterIndividual">Individuos</button>
             </div>
+
+            <div class="online-toggle">
+                <span id="onlineSearchLabel">Búsqueda Online (DBpedia)</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="onlineSearchToggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
         </div>
 
         <div class="results-container" id="resultsContainer" style="display: none;">
@@ -509,59 +570,104 @@
     <script>
         let currentLang = 'es';
         let currentFilter = 'all';
+        let onlineSearchEnabled = true;
 
         const translations = {
             es: {
+                // Títulos y textos principales
+                mainTitle: 'Motor de Búsqueda Ontológico',
                 subtitle: 'Búsqueda Híbrida: Ontología Local + DBpedia Online',
                 searchTitle: 'Buscar en la Ontología',
                 searchPlaceholder: 'Ej: malware, ataque, firewall...',
                 searchBtn: 'Buscar',
+                
+                // Filtros
                 filterAll: 'Todos',
                 filterClass: 'Clases',
                 filterProperty: 'Propiedades',
                 filterIndividual: 'Individuos',
+                onlineSearchLabel: 'Búsqueda Online (DBpedia)',
+                
+                // Resultados
                 resultsFound: 'resultados encontrados',
                 noResults: 'No se encontraron resultados',
                 noResultsMsg: 'Intenta con otros términos de búsqueda',
                 loading: 'Buscando...',
+                
+                // Estadísticas
+                statClasses: 'Clases',
+                statProperties: 'Propiedades',
+                statIndividuals: 'Individuos',
+                offlineResults: 'Resultados Locales',
+                onlineResults: 'Resultados Online',
+                
+                // Detalles de entidad
                 parents: 'Superclases',
                 subclasses: 'Subclases',
                 domain: 'Dominio',
                 range: 'Rango',
                 classes: 'Clases',
                 instances: 'Instancias',
-                statClasses: 'Clases',
-                statProperties: 'Propiedades',
-                statIndividuals: 'Individuos',
-                offlineResults: 'Resultados Locales',
-                onlineResults: 'Resultados Online',
-                viewOnDBpedia: 'Ver en DBpedia'
+                viewOnDBpedia: 'Ver en DBpedia',
+                
+                // Textos específicos de DBpedia
+                dbpediaResource: 'Recurso DBpedia',
+                dbpediaDescription: 'Información obtenida de DBpedia en línea',
+                dbpediaSource: 'Fuente: DBpedia Online',
+                localSource: 'Fuente: Ontología Local',
+                
+                // Textos de error
+                error: 'Error',
+                searchError: 'Hubo un error al realizar la búsqueda',
+                detailsError: 'Error al cargar los detalles'
             },
             en: {
+                // Main titles and texts
+                mainTitle: 'Ontological Search Engine',
                 subtitle: 'Hybrid Search: Local Ontology + DBpedia Online',
                 searchTitle: 'Search in Ontology',
                 searchPlaceholder: 'Ex: malware, attack, firewall...',
                 searchBtn: 'Search',
+                
+                // Filters
                 filterAll: 'All',
                 filterClass: 'Classes',
                 filterProperty: 'Properties',
                 filterIndividual: 'Individuals',
+                onlineSearchLabel: 'Online Search (DBpedia)',
+                
+                // Results
                 resultsFound: 'results found',
                 noResults: 'No results found',
                 noResultsMsg: 'Try different search terms',
                 loading: 'Searching...',
+                
+                // Statistics
+                statClasses: 'Classes',
+                statProperties: 'Properties',
+                statIndividuals: 'Individuals',
+                offlineResults: 'Local Results',
+                onlineResults: 'Online Results',
+                
+                // Entity details
                 parents: 'Superclasses',
                 subclasses: 'Subclasses',
                 domain: 'Domain',
                 range: 'Range',
                 classes: 'Classes',
                 instances: 'Instances',
-                statClasses: 'Classes',
-                statProperties: 'Properties',
-                statIndividuals: 'Individuals',
-                offlineResults: 'Local Results',
-                onlineResults: 'Online Results',
-                viewOnDBpedia: 'View on DBpedia'
+                viewOnDBpedia: 'View on DBpedia',
+                
+                // DBpedia specific texts
+                dbpediaResource: 'DBpedia Resource',
+                dbpediaDescription: 'Information obtained from DBpedia online',
+                dbpediaSource: 'Source: DBpedia Online',
+                localSource: 'Source: Local Ontology',
+                
+                // Error texts
+                error: 'Error',
+                searchError: 'There was an error performing the search',
+                detailsError: 'Error loading details'
             }
         };
 
@@ -573,7 +679,17 @@
                     btn.classList.add('active');
                 }
             });
-            const t = translations[lang];
+            updateUITexts();
+            loadStats();
+            const query = document.getElementById('searchInput').value;
+            if (query) {
+                performSearch();
+            }
+        }
+
+        function updateUITexts() {
+            const t = translations[currentLang];
+            document.getElementById('mainTitle').textContent = t.mainTitle;
             document.getElementById('subtitle').textContent = t.subtitle;
             document.getElementById('searchTitle').textContent = t.searchTitle;
             document.getElementById('searchInput').placeholder = t.searchPlaceholder;
@@ -582,11 +698,7 @@
             document.getElementById('filterClass').textContent = t.filterClass;
             document.getElementById('filterProperty').textContent = t.filterProperty;
             document.getElementById('filterIndividual').textContent = t.filterIndividual;
-            loadStats();
-            const query = document.getElementById('searchInput').value;
-            if (query) {
-                performSearch();
-            }
+            document.getElementById('onlineSearchLabel').textContent = t.onlineSearchLabel;
         }
 
         function setFilter(filter) {
@@ -597,6 +709,14 @@
                     btn.classList.add('active');
                 }
             });
+            const query = document.getElementById('searchInput').value;
+            if (query) {
+                performSearch();
+            }
+        }
+
+        function toggleOnlineSearch() {
+            onlineSearchEnabled = document.getElementById('onlineSearchToggle').checked;
             const query = document.getElementById('searchInput').value;
             if (query) {
                 performSearch();
@@ -648,7 +768,7 @@
                 </div>
             `;
             try {
-                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&lang=${currentLang}&type=${currentFilter}`);
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&lang=${currentLang}&type=${currentFilter}&online=${onlineSearchEnabled}`);
                 const data = await response.json();
                 
                 // Actualizar contador de resultados
@@ -674,11 +794,12 @@
                 }
             } catch (error) {
                 console.error('Error searching:', error);
+                const t = translations[currentLang];
                 results.innerHTML = `
                     <div class="no-results">
                         <div class="no-results-icon">⚠️</div>
-                        <h3>Error</h3>
-                        <p>Hubo un error al realizar la búsqueda</p>
+                        <h3>${t.error}</h3>
+                        <p>${t.searchError}</p>
                     </div>
                 `;
             }
@@ -690,12 +811,12 @@
                              result.type === 'Propiedad' ? 'type-property' : 
                              'type-dbpedia';
             
+            const t = translations[currentLang];
             const sourceBadge = result.source === 'online' ? 
-                '<span class="source-badge source-online-badge">🌐 Online</span>' : 
-                '<span class="source-badge source-offline-badge">💾 Offline</span>';
+                `<span class="source-badge source-online-badge">🌐 ${t.onlineResults}</span>` : 
+                `<span class="source-badge source-offline-badge">💾 ${t.offlineResults}</span>`;
             
             let relations = '';
-            const t = translations[currentLang];
             
             if (result.parents && result.parents.length > 0) {
                 relations += result.parents.map(p => `<span class="relation-tag">↑ ${p}</span>`).join('');
@@ -742,18 +863,24 @@
                 const response = await fetch(`/api/details/${entityName}?lang=${currentLang}&source=${source}`);
                 const data = await response.json();
                 
+                // Usar las traducciones del backend si están disponibles
+                const entityType = data.translations?.type || data.type;
+                const entityComment = data.translations?.comment || data.comment;
+                const sourceText = source === 'online' ? t.dbpediaSource : t.localSource;
+                const viewExternalText = data.translations?.view_external || t.viewOnDBpedia;
+                
                 let detailHtml = `
                     <div class="detail-section">
                         <div class="detail-title">${data.label}</div>
                         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-                            <span class="result-type ${getTypeClass(data.type)}">${data.type}</span>
-                            ${data.source === 'online' ? 
-                              '<span class="source-badge source-online-badge">🌐 Fuente: DBpedia Online</span>' : 
-                              '<span class="source-badge source-offline-badge">💾 Fuente: Ontología Local</span>'}
+                            <span class="result-type ${getTypeClass(data.type)}">${entityType}</span>
+                            <span class="source-badge ${source === 'online' ? 'source-online-badge' : 'source-offline-badge'}">
+                                ${sourceText}
+                            </span>
                         </div>
-                        <p style="margin-top: 15px;">${data.comment}</p>
+                        <p style="margin-top: 15px;">${entityComment}</p>
                         ${data.iri ? `<p style="color: #999; font-size: 0.9em; margin-top: 10px;">IRI: ${data.iri}</p>` : ''}
-                        ${data.external_link ? `<a href="${data.external_link}" target="_blank" class="external-link">${t.viewOnDBpedia}</a>` : ''}
+                        ${data.external_link ? `<a href="${data.external_link}" target="_blank" class="external-link">${viewExternalText}</a>` : ''}
                     </div>
                 `;
                 
@@ -820,7 +947,14 @@
                 content.innerHTML = detailHtml;
             } catch (error) {
                 console.error('Error loading details:', error);
-                content.innerHTML = '<p>Error al cargar los detalles</p>';
+                const t = translations[currentLang];
+                content.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">⚠️</div>
+                        <h3>${t.error}</h3>
+                        <p>${t.detailsError}</p>
+                    </div>
+                `;
             }
         }
 
@@ -828,7 +962,7 @@
             if (type === 'Clase') return 'type-class';
             if (type === 'Individuo') return 'type-individual';
             if (type === 'Propiedad') return 'type-property';
-            if (type === 'DBPedia' || type === 'Recurso DBpedia') return 'type-dbpedia';
+            if (type === 'DBPedia' || type === 'Recurso DBpedia' || type === 'DBpedia Resource') return 'type-dbpedia';
             return 'type-class';
         }
 
@@ -836,6 +970,7 @@
             document.getElementById('detailModal').style.display = 'none';
         }
 
+        // Event listeners
         window.onclick = function(event) {
             const modal = document.getElementById('detailModal');
             if (event.target === modal) {
@@ -849,7 +984,13 @@
             }
         });
 
-        loadStats();
+        document.getElementById('onlineSearchToggle').addEventListener('change', toggleOnlineSearch);
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            updateUITexts();
+            loadStats();
+        });
     </script>
 </body>
 </html>
