@@ -527,6 +527,7 @@
                 <div class="language-selector">
                     <button class="lang-btn active" data-lang="es" onclick="changeLang('es')">🇪🇸 ES</button>
                     <button class="lang-btn" data-lang="en" onclick="changeLang('en')">🇺🇸 EN</button>
+                    <button class="lang-btn" data-lang="fr" onclick="changeLang('fr')">🇫🇷 FR</button>
                 </div>
             </div>
 
@@ -668,6 +669,54 @@
                 error: 'Error',
                 searchError: 'There was an error performing the search',
                 detailsError: 'Error loading details'
+            },
+            fr: {
+                // Títulos y textos principales
+                mainTitle: 'Moteur de Recherche Ontologique',
+                subtitle: 'Recherche Hybride: Ontologie Locale + DBpedia En Ligne',
+                searchTitle: 'Rechercher dans l\'Ontologie',
+                searchPlaceholder: 'Ex: malware, attaque, pare-feu...',
+                searchBtn: 'Rechercher',
+                
+                // Filtros
+                filterAll: 'Tous',
+                filterClass: 'Classes',
+                filterProperty: 'Propriétés',
+                filterIndividual: 'Individus',
+                onlineSearchLabel: 'Recherche En Ligne (DBpedia)',
+                
+                // Resultados
+                resultsFound: 'résultats trouvés',
+                noResults: 'Aucun résultat trouvé',
+                noResultsMsg: 'Essayez d\'autres termes de recherche',
+                loading: 'Recherche en cours...',
+                
+                // Estadísticas
+                statClasses: 'Classes',
+                statProperties: 'Propriétés',
+                statIndividuals: 'Individus',
+                offlineResults: 'Résultats Locaux',
+                onlineResults: 'Résultats En Ligne',
+                
+                // Detalles de entidad
+                parents: 'Superclasses',
+                subclasses: 'Sous-classes',
+                domain: 'Domaine',
+                range: 'Plage',
+                classes: 'Classes',
+                instances: 'Instances',
+                viewOnDBpedia: 'Voir sur DBpedia',
+                
+                // Textos específicos de DBpedia
+                dbpediaResource: 'Ressource DBpedia',
+                dbpediaDescription: 'Informations obtenues depuis DBpedia en ligne',
+                dbpediaSource: 'Source: DBpedia En Ligne',
+                localSource: 'Source: Ontologie Locale',
+                
+                // Textos de error
+                error: 'Erreur',
+                searchError: 'Une erreur est survenue lors de la recherche',
+                detailsError: 'Erreur lors du chargement des détails'
             }
         };
 
@@ -743,7 +792,7 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-number">🌐</div>
-                        <div class="stat-label">DBpedia Online</div>
+                        <div class="stat-label">DBpedia ${currentLang.toUpperCase()}</div>
                     </div>
                 `;
                 document.getElementById('stats').innerHTML = statsHtml;
@@ -806,15 +855,21 @@
         }
 
         function createResultCard(result) {
-            const typeClass = result.type === 'Clase' ? 'type-class' : 
-                             result.type === 'Individuo' ? 'type-individual' : 
-                             result.type === 'Propiedad' ? 'type-property' : 
+            const t = translations[currentLang];
+            
+            // Usar traducciones del backend si están disponibles
+            const entityType = result.translations?.type?.[currentLang] || result.type;
+            const entityComment = result.translations?.comment?.[currentLang] || result.comment;
+            
+            const typeClass = entityType === 'Clase' || entityType === 'Class' || entityType === 'Classe' ? 'type-class' : 
+                             entityType === 'Individuo' || entityType === 'Individual' || entityType === 'Individu' ? 'type-individual' : 
+                             entityType === 'Propiedad' || entityType === 'Property' || entityType === 'Propriété' ? 'type-property' : 
                              'type-dbpedia';
             
-            const t = translations[currentLang];
+            const sourceText = result.source === 'online' ? t.onlineResults : t.offlineResults;
             const sourceBadge = result.source === 'online' ? 
-                `<span class="source-badge source-online-badge">🌐 ${t.onlineResults}</span>` : 
-                `<span class="source-badge source-offline-badge">💾 ${t.offlineResults}</span>`;
+                `<span class="source-badge source-online-badge">🌐 ${sourceText}</span>` : 
+                `<span class="source-badge source-offline-badge">💾 ${sourceText}</span>`;
             
             let relations = '';
             
@@ -840,9 +895,9 @@
                         <div>
                             <div class="result-title">${result.label} ${sourceBadge}</div>
                         </div>
-                        <span class="result-type ${typeClass}">${result.type}</span>
+                        <span class="result-type ${typeClass}">${entityType}</span>
                     </div>
-                    <div class="result-comment">${result.comment}</div>
+                    <div class="result-comment">${entityComment}</div>
                     ${relations ? `<div class="result-relations">${relations}</div>` : ''}
                 </div>
             `;
@@ -864,16 +919,16 @@
                 const data = await response.json();
                 
                 // Usar las traducciones del backend si están disponibles
-                const entityType = data.translations?.type || data.type;
-                const entityComment = data.translations?.comment || data.comment;
+                const entityType = data.translations?.type?.[currentLang] || data.type;
+                const entityComment = data.translations?.comment?.[currentLang] || data.comment;
                 const sourceText = source === 'online' ? t.dbpediaSource : t.localSource;
-                const viewExternalText = data.translations?.view_external || t.viewOnDBpedia;
+                const viewExternalText = data.translations?.view_external?.[currentLang] || t.viewOnDBpedia;
                 
                 let detailHtml = `
                     <div class="detail-section">
                         <div class="detail-title">${data.label}</div>
                         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-                            <span class="result-type ${getTypeClass(data.type)}">${entityType}</span>
+                            <span class="result-type ${getTypeClass(entityType)}">${entityType}</span>
                             <span class="source-badge ${source === 'online' ? 'source-online-badge' : 'source-offline-badge'}">
                                 ${sourceText}
                             </span>
@@ -959,10 +1014,11 @@
         }
 
         function getTypeClass(type) {
-            if (type === 'Clase') return 'type-class';
-            if (type === 'Individuo') return 'type-individual';
-            if (type === 'Propiedad') return 'type-property';
-            if (type === 'DBPedia' || type === 'Recurso DBpedia' || type === 'DBpedia Resource') return 'type-dbpedia';
+            if (type === 'Clase' || type === 'Class' || type === 'Classe') return 'type-class';
+            if (type === 'Individuo' || type === 'Individual' || type === 'Individu') return 'type-individual';
+            if (type === 'Propiedad' || type === 'Property' || type === 'Propriété') return 'type-property';
+            if (type === 'DBPedia' || type === 'DBpedia Resource' || type === 'Ressource DBpedia' || 
+                type === 'Recurso DBpedia') return 'type-dbpedia';
             return 'type-class';
         }
 

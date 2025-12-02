@@ -12,7 +12,13 @@ CORS(app)
 # Cargar la ontología
 ontology = None
 ONTOLOGY_PATH = "CibersecurityOntology.rdf"
-DBPEDIA_ENDPOINT = "https://dbpedia.org/sparql"
+
+# Endpoints de DBpedia por idioma
+DBPEDIA_ENDPOINTS = {
+    'es': 'https://es.dbpedia.org/sparql',
+    'en': 'https://dbpedia.org/sparql',
+    'fr': 'https://fr.dbpedia.org/sparql'
+}
 
 def load_ontology():
     global ontology
@@ -28,10 +34,23 @@ def get_label(entity, lang='es'):
     if hasattr(entity, 'label'):
         labels = entity.label
         if labels:
+            # Buscar primero en el idioma solicitado
             for label in labels:
-                if hasattr(label, 'lang') and label.lang == lang:
-                    return str(label)
+                if hasattr(label, 'lang'):
+                    if label.lang == lang:
+                        return str(label)
+                    # Si no encuentra exacto, buscar español para compatibilidad
+                    elif lang != 'es' and label.lang == 'es':
+                        spanish_label = str(label)
+            
+            # Si no encuentra en el idioma solicitado, intentar con español
+            if 'spanish_label' in locals():
+                return spanish_label
+            
+            # Si no hay etiqueta en español, usar la primera disponible
             return str(labels[0]) if labels else entity.name
+    
+    # Si no tiene etiqueta, devolver el nombre
     return entity.name
 
 def get_comment(entity, lang='es'):
@@ -39,11 +58,29 @@ def get_comment(entity, lang='es'):
     if hasattr(entity, 'comment'):
         comments = entity.comment
         if comments:
+            # Buscar en el idioma solicitado
             for comment in comments:
-                if hasattr(comment, 'lang') and comment.lang == lang:
-                    return str(comment)
+                if hasattr(comment, 'lang'):
+                    if comment.lang == lang:
+                        return str(comment)
+                    # Si no encuentra exacto, buscar español
+                    elif lang != 'es' and comment.lang == 'es':
+                        spanish_comment = str(comment)
+            
+            # Si no encuentra en el idioma solicitado, intentar con español
+            if 'spanish_comment' in locals():
+                return spanish_comment
+            
+            # Si no hay comentario en español, usar la primera disponible
             return str(comments[0]) if comments else ""
-    return ""
+    
+    # Mensajes por defecto según idioma
+    default_comments = {
+        'es': "Sin descripción disponible",
+        'en': "No description available",
+        'fr': "Aucune description disponible"
+    }
+    return default_comments.get(lang, default_comments['es'])
 
 def normalize_text(text):
     if text is None:
@@ -178,10 +215,30 @@ def calculate_relevance(query, label, name, comment, entity_type):
     return score
 
 def search_dbpedia_online(query, lang='en', limit=10):
-    """Busca en DBpedia en línea y devuelve resultados formateados"""
+    """Busca en DBpedia según el idioma seleccionado"""
     try:
-        sparql = SPARQLWrapper(DBPEDIA_ENDPOINT)
+        # Seleccionar endpoint según idioma
+        endpoint = DBPEDIA_ENDPOINTS.get(lang, DBPEDIA_ENDPOINTS['en'])
+        sparql = SPARQLWrapper(endpoint)
         sparql.addCustomHttpHeader("User-Agent", "CybersecuritySearchBot/1.0")
+        
+        # Ajustar el filtro de categorías según el idioma
+        if lang == 'es':
+            category_keywords = ['ciber', 'seguridad', 'malware', 'ransomware', 'hacker', 
+                                'vulnerabilidad', 'encriptación', 'virus_informático', 
+                                'seguridad_informática']
+        elif lang == 'fr':
+            category_keywords = ['cyber', 'sécurité', 'logiciel_malveillant', 'rançongiciel',
+                                'pirate', 'vulnérabilité', 'chiffrement', 'virus_informatique',
+                                'sécurité_informatique']
+        else:  # inglés por defecto
+            category_keywords = ['cyber', 'security', 'malware', 'ransomware', 'hacker',
+                                'vulnerability', 'encryption', 'computer_virus', 
+                                'information_security']
+        
+        # Construir filtro de categorías
+        category_filter = " || ".join([f"CONTAINS(LCASE(STR(?category)), '{keyword}')" 
+                                      for keyword in category_keywords])
         
         search_query = f"""
         PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -191,14 +248,13 @@ def search_dbpedia_online(query, lang='en', limit=10):
         SELECT DISTINCT ?resource ?label ?abstract WHERE {{
           {{
             ?resource rdfs:label ?label .
-            FILTER(CONTAINS(LCASE(?label), "{query.lower()}") && LANG(?label) = 'en')
-            OPTIONAL {{ ?resource dbo:abstract ?abstract . FILTER(LANG(?abstract) = 'en') }}
-          }}
-          UNION
-          {{
-            ?resource dbo:abstract ?abstract .
-            FILTER(CONTAINS(LCASE(?abstract), "{query.lower()}") && LANG(?abstract) = 'en')
-            ?resource rdfs:label ?label . FILTER(LANG(?label) = 'en')
+            FILTER(CONTAINS(LCASE(?label), "{query.lower()}") && LANG(?label) = '{lang}')
+            
+            # Filtrar por categorías específicas de ciberseguridad
+            ?resource dct:subject ?category .
+            FILTER({category_filter})
+            
+            OPTIONAL {{ ?resource dbo:abstract ?abstract . FILTER(LANG(?abstract) = '{lang}') }}
           }}
         }}
         LIMIT {limit}
@@ -213,14 +269,26 @@ def search_dbpedia_online(query, lang='en', limit=10):
             resource_uri = result["resource"]["value"]
             resource_name = resource_uri.split("/")[-1]
             
-            # Mejorar la descripción
             comment = result.get("abstract", {}).get("value", "")
             if not comment:
-                comment = f"Recurso de seguridad relacionado con '{query}'"
+                # Mensajes según idioma
+                comment_msgs = {
+                    'es': f"Recurso de ciberseguridad relacionado con '{query}'",
+                    'en': f"Cybersecurity resource related to '{query}'",
+                    'fr': f"Ressource de cybersécurité liée à '{query}'"
+                }
+                comment = comment_msgs.get(lang, comment_msgs['en'])
             else:
-                # Acortar descripción si es muy larga
                 if len(comment) > 200:
                     comment = comment[:197] + "..."
+            
+            # Construir enlace según el idioma
+            if lang == 'es':
+                external_link = f"https://es.dbpedia.org/page/{resource_name}"
+            elif lang == 'fr':
+                external_link = f"https://fr.dbpedia.org/page/{resource_name}"
+            else:
+                external_link = f"http://dbpedia.org/page/{resource_name}"
             
             formatted_result = {
                 'name': resource_name,
@@ -229,15 +297,28 @@ def search_dbpedia_online(query, lang='en', limit=10):
                 'comment': comment,
                 'source': 'online',
                 'uri': resource_uri,
-                'relevance': 45,  # Ligeramente menor que resultados locales
-                'external_link': f"http://dbpedia.org/page/{resource_name}"
+                'relevance': 45,
+                'external_link': external_link,
+                'translations': {
+                    'type': {
+                        'es': 'Recurso DBpedia',
+                        'en': 'DBpedia Resource',
+                        'fr': 'Ressource DBpedia'
+                    },
+                    'comment': comment,
+                    'view_external': {
+                        'es': 'Ver en DBpedia',
+                        'en': 'View on DBpedia',
+                        'fr': 'Voir sur DBpedia'
+                    }
+                }
             }
             formatted_results.append(formatted_result)
         
         return formatted_results
         
     except Exception as e:
-        print(f"❌ Error en búsqueda online DBpedia: {e}")
+        print(f"❌ Error en búsqueda online DBpedia ({lang}): {e}")
         return []
 
 def search_hybrid(query, lang='es', filter_type='all', online_search=True):
@@ -260,7 +341,7 @@ def search_hybrid(query, lang='es', filter_type='all', online_search=True):
     
     # BÚSQUEDA ONLINE (DBpedia)
     if online_search:
-        online_results = search_dbpedia_online(query, 'en', limit=15)
+        online_results = search_dbpedia_online(query, lang, limit=15)
         all_results.extend(online_results)
     
     # Ordenar por relevancia
@@ -321,6 +402,20 @@ def search():
         'results': results_page
     })
 
+def translate_type(type_str, dest_lang='en'):
+    """Traduce tipos de entidades"""
+    translations = {
+        'Clase': {'en': 'Class', 'fr': 'Classe'},
+        'Propiedad': {'en': 'Property', 'fr': 'Propriété'},
+        'Individuo': {'en': 'Individual', 'fr': 'Individu'},
+        'DBPedia': {'en': 'DBPedia Resource', 'fr': 'Ressource DBpedia'},
+        'Recurso DBpedia': {'en': 'DBPedia Resource', 'fr': 'Ressource DBpedia'}
+    }
+    
+    if type_str in translations:
+        return translations[type_str].get(dest_lang, type_str)
+    return type_str
+
 @app.route('/api/details/<entity_name>', methods=['GET'])
 def get_details(entity_name):
     lang = request.args.get('lang', 'es')
@@ -328,14 +423,34 @@ def get_details(entity_name):
     
     if source == 'online':
         # Para recursos online, devolver información básica
+        type_translations = {
+            'es': 'Recurso DBpedia',
+            'en': 'DBpedia Resource',
+            'fr': 'Ressource DBpedia'
+        }
+        comment_translations = {
+            'es': 'Información obtenida de DBpedia en línea',
+            'en': 'Information obtained from DBpedia online',
+            'fr': 'Informations obtenues depuis DBpedia en ligne'
+        }
+        
         return jsonify({
             'name': entity_name,
             'label': entity_name.replace('_', ' '),
-            'type': 'Recurso DBpedia',
-            'comment': 'Información obtenida de DBpedia en línea',
+            'type': type_translations.get(lang, 'DBpedia Resource'),
+            'comment': comment_translations.get(lang, 'Information obtained from DBpedia online'),
             'source': 'online',
             'uri': f'http://dbpedia.org/resource/{entity_name}',
-            'external_link': f'http://dbpedia.org/page/{entity_name}'
+            'external_link': f'http://dbpedia.org/page/{entity_name}',
+            'translations': {
+                'type': type_translations,
+                'comment': comment_translations,
+                'view_external': {
+                    'es': 'Ver en DBpedia',
+                    'en': 'View on DBpedia',
+                    'fr': 'Voir sur DBpedia'
+                }
+            }
         })
     
     # Lógica para detalles offline
@@ -371,15 +486,32 @@ def get_details(entity_name):
     details = {
         'name': entity.name,
         'label': get_label(entity, lang),
-        'comment': get_comment(entity, lang) or "Sin descripción disponible",
+        'comment': get_comment(entity, lang),
         'iri': entity.iri,
         'source': 'offline',
-        'external_link': None
+        'external_link': None,
+        'translations': {
+            'type': {
+                'es': '',
+                'en': '',
+                'fr': ''
+            },
+            'view_external': {
+                'es': 'Ver detalles',
+                'en': 'View details',
+                'fr': 'Voir détails'
+            }
+        }
     }
     
     # Información específica según el tipo
     if isinstance(entity, type):
         details['type'] = 'Clase'
+        details['translations']['type'] = {
+            'es': 'Clase',
+            'en': 'Class',
+            'fr': 'Classe'
+        }
         details['parents'] = [{'name': p.name, 'label': get_label(p, lang)} 
                              for p in entity.is_a if isinstance(p, type)]
         details['subclasses'] = [{'name': s.name, 'label': get_label(s, lang)} 
@@ -389,6 +521,11 @@ def get_details(entity_name):
         
     elif hasattr(entity, 'domain'):
         details['type'] = 'Propiedad'
+        details['translations']['type'] = {
+            'es': 'Propiedad',
+            'en': 'Property',
+            'fr': 'Propriété'
+        }
         details['domain'] = [{'name': d.name, 'label': get_label(d, lang)} 
                             for d in entity.domain] if entity.domain else []
         details['range'] = [{'name': r.name, 'label': get_label(r, lang)} 
@@ -396,6 +533,11 @@ def get_details(entity_name):
     
     else:
         details['type'] = 'Individuo'
+        details['translations']['type'] = {
+            'es': 'Individuo',
+            'en': 'Individual',
+            'fr': 'Individu'
+        }
         details['classes'] = [{'name': c.name, 'label': get_label(c, lang)} 
                              for c in entity.is_a if isinstance(c, type)]
     
@@ -419,9 +561,9 @@ def get_stats():
     return jsonify({
         'local': local_stats,
         'online': {
-            'endpoint': DBPEDIA_ENDPOINT,
+            'endpoint': DBPEDIA_ENDPOINTS,
             'available': True,
-            'source': 'DBpedia'
+            'source': 'DBpedia Multilingüe'
         }
     })
 
