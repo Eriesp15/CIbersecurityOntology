@@ -507,6 +507,54 @@
                 align-items: flex-start;
                 gap: 10px;
             }
+
+                    /* Notificaciones */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            z-index: 9999;
+            animation: slideIn 0.3s ease-out;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .notification.success {
+            background: #4caf50;
+        }
+
+        .notification.warning {
+            background: #ff9800;
+        }
+
+        .notification.error {
+            background: #f44336;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
         }
     </style>
 </head>
@@ -722,32 +770,93 @@
 
         function changeLang(lang) {
             currentLang = lang;
+            
+            // Limpiar el campo de búsqueda
+            document.getElementById('searchInput').value = '';
+            
+            // Limpiar resultados anteriores
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.style.display = 'none';
+            document.getElementById('results').innerHTML = '';
+            
+            // Actualizar botones de idioma
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.dataset.lang === lang) {
                     btn.classList.add('active');
                 }
             });
+            
+            // Actualizar textos de la interfaz
             updateUITexts();
+            
+            // Cargar estadísticas
             loadStats();
-            const query = document.getElementById('searchInput').value;
-            if (query) {
-                performSearch();
-            }
         }
 
         function updateUITexts() {
             const t = translations[currentLang];
+            
+            // Actualizar todos los textos de la interfaz
             document.getElementById('mainTitle').textContent = t.mainTitle;
             document.getElementById('subtitle').textContent = t.subtitle;
             document.getElementById('searchTitle').textContent = t.searchTitle;
             document.getElementById('searchInput').placeholder = t.searchPlaceholder;
             document.getElementById('searchBtn').textContent = t.searchBtn;
+            
+            // Actualizar filtros
             document.getElementById('filterAll').textContent = t.filterAll;
             document.getElementById('filterClass').textContent = t.filterClass;
             document.getElementById('filterProperty').textContent = t.filterProperty;
             document.getElementById('filterIndividual').textContent = t.filterIndividual;
+            
+            // Actualizar toggle de búsqueda online
             document.getElementById('onlineSearchLabel').textContent = t.onlineSearchLabel;
+            
+            // Limpiar estadísticas de fuente
+            document.getElementById('sourceStats').innerHTML = '';
+            
+            // Actualizar contador de resultados
+            document.getElementById('resultsCount').textContent = '';
+            
+            // Forzar actualización del DOM
+            setTimeout(() => {
+                // Esto asegura que todos los elementos se actualicen
+                const inputs = document.querySelectorAll('input, button, span, div');
+                inputs.forEach(el => {
+                    if (el.hasAttribute('data-translate')) {
+                        const key = el.getAttribute('data-translate');
+                        if (t[key]) {
+                            el.textContent = t[key];
+                        }
+                    }
+                });
+            }, 50);
+        }
+
+        function clearSearch() {
+            // Limpiar campo de búsqueda
+            document.getElementById('searchInput').value = '';
+            
+            // Ocultar contenedor de resultados
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.style.display = 'none';
+            
+            // Limpiar resultados
+            document.getElementById('results').innerHTML = '';
+            
+            // Limpiar estadísticas
+            document.getElementById('resultsCount').textContent = '';
+            document.getElementById('sourceStats').innerHTML = '';
+            
+            // Resetear filtro a "Todos"
+            currentFilter = 'all';
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.filter === 'all') {
+                    btn.classList.add('active');
+                }
+            });
         }
 
         function setFilter(filter) {
@@ -804,26 +913,43 @@
         async function performSearch() {
             const query = document.getElementById('searchInput').value.trim();
             if (!query) {
+                showNotification('Por favor ingresa un término de búsqueda', 'warning');
                 return;
             }
+            
             const resultsContainer = document.getElementById('resultsContainer');
             const results = document.getElementById('results');
             const t = translations[currentLang];
+            
+            // Mostrar loading
             resultsContainer.style.display = 'block';
             results.innerHTML = `
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>${t.loading}</p>
+                    <p>${t.loading} "${query}"...</p>
                 </div>
             `;
+            
             try {
-                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&lang=${currentLang}&type=${currentFilter}&online=${onlineSearchEnabled}`);
+                // Agregar timestamp para evitar cache
+                const timestamp = new Date().getTime();
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&lang=${currentLang}&type=${currentFilter}&online=${onlineSearchEnabled}&_=${timestamp}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
-                // Actualizar contador de resultados
+                // Verificar que tenemos datos válidos
+                if (!data || !Array.isArray(data.results)) {
+                    throw new Error('Datos de respuesta inválidos');
+                }
+                
+                // Actualizar contador de resultados con formato correcto
                 document.getElementById('resultsCount').textContent = `${data.total} ${t.resultsFound}`;
                 
-                // Actualizar estadísticas de fuente
+                // Actualizar estadísticas de fuente con textos correctos
                 const sourceStatsHtml = `
                     <span class="source-stat source-offline">💾 ${data.statistics.offline} ${t.offlineResults}</span>
                     <span class="source-stat source-online">🌐 ${data.statistics.online} ${t.onlineResults}</span>
@@ -839,8 +965,10 @@
                         </div>
                     `;
                 } else {
-                    results.innerHTML = data.results.map(result => createResultCard(result)).join('');
+                    // Usar las traducciones actuales
+                    results.innerHTML = data.results.map(result => createResultCard(result, t)).join('');
                 }
+                
             } catch (error) {
                 console.error('Error searching:', error);
                 const t = translations[currentLang];
@@ -849,23 +977,23 @@
                         <div class="no-results-icon">⚠️</div>
                         <h3>${t.error}</h3>
                         <p>${t.searchError}</p>
+                        <p style="font-size: 0.9em; color: #999; margin-top: 10px;">${error.message}</p>
                     </div>
                 `;
             }
         }
 
-        function createResultCard(result) {
-            const t = translations[currentLang];
+        function createResultCard(result, translations) {
+            const t = translations || window.translations[currentLang];
             
             // Usar traducciones del backend si están disponibles
             const entityType = result.translations?.type?.[currentLang] || result.type;
             const entityComment = result.translations?.comment?.[currentLang] || result.comment;
             
-            const typeClass = entityType === 'Clase' || entityType === 'Class' || entityType === 'Classe' ? 'type-class' : 
-                             entityType === 'Individuo' || entityType === 'Individual' || entityType === 'Individu' ? 'type-individual' : 
-                             entityType === 'Propiedad' || entityType === 'Property' || entityType === 'Propriété' ? 'type-property' : 
-                             'type-dbpedia';
+            // Determinar clase de tipo
+            const typeClass = getTypeClass(entityType);
             
+            // Texto de fuente
             const sourceText = result.source === 'online' ? t.onlineResults : t.offlineResults;
             const sourceBadge = result.source === 'online' ? 
                 `<span class="source-badge source-online-badge">🌐 ${sourceText}</span>` : 
@@ -873,6 +1001,7 @@
             
             let relations = '';
             
+            // Generar relaciones con textos traducidos
             if (result.parents && result.parents.length > 0) {
                 relations += result.parents.map(p => `<span class="relation-tag">↑ ${p}</span>`).join('');
             }

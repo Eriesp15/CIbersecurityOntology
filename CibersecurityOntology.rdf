@@ -1881,7 +1881,7 @@
               <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ransomware</rdf:first>
               <rdf:rest>
                 <rdf:Description>
-                  <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Spyware</rdfs:first>
+                  <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Spyware</rdf:first>
                   <rdf:rest>
                     <rdf:Description>
                       <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Troyano</rdf:first>
