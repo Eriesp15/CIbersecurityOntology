@@ -57,11 +57,12 @@
 
         .language-selector {
             display: flex;
-            gap: 10px;
+            flex-wrap: wrap;
+            gap: 5px;
         }
 
         .lang-btn {
-            padding: 8px 16px;
+            padding: 6px 12px;
             border: 2px solid #667eea;
             background: white;
             color: #667eea;
@@ -69,6 +70,7 @@
             cursor: pointer;
             font-weight: bold;
             transition: all 0.3s;
+            font-size: 0.9em;
         }
 
         .lang-btn.active {
@@ -507,6 +509,10 @@
                 align-items: flex-start;
                 gap: 10px;
             }
+            
+            .language-selector {
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -527,6 +533,10 @@
                 <div class="language-selector">
                     <button class="lang-btn active" data-lang="es" onclick="changeLang('es')">🇪🇸 ES</button>
                     <button class="lang-btn" data-lang="en" onclick="changeLang('en')">🇺🇸 EN</button>
+                    <button class="lang-btn" data-lang="fr" onclick="changeLang('fr')">🇫🇷 FR</button>
+                    <button class="lang-btn" data-lang="de" onclick="changeLang('de')">🇩🇪 DE</button>
+                    <button class="lang-btn" data-lang="it" onclick="changeLang('it')">🇮🇹 IT</button>
+                    <button class="lang-btn" data-lang="pt" onclick="changeLang('pt')">🇵🇹 PT</button>
                 </div>
             </div>
 
@@ -668,6 +678,198 @@
                 error: 'Error',
                 searchError: 'There was an error performing the search',
                 detailsError: 'Error loading details'
+            },
+            fr: {
+                // Titres et textes principaux
+                mainTitle: 'Moteur de Recherche Ontologique',
+                subtitle: 'Recherche Hybride: Ontologie Locale + DBpedia Online',
+                searchTitle: 'Rechercher dans l\'Ontologie',
+                searchPlaceholder: 'Ex: malware, attaque, pare-feu...',
+                searchBtn: 'Rechercher',
+                
+                // Filtres
+                filterAll: 'Tous',
+                filterClass: 'Classes',
+                filterProperty: 'Propriétés',
+                filterIndividual: 'Individus',
+                onlineSearchLabel: 'Recherche en Ligne (DBpedia)',
+                
+                // Résultats
+                resultsFound: 'résultats trouvés',
+                noResults: 'Aucun résultat trouvé',
+                noResultsMsg: 'Essayez d\'autres termes de recherche',
+                loading: 'Recherche en cours...',
+                
+                // Statistiques
+                statClasses: 'Classes',
+                statProperties: 'Propriétés',
+                statIndividuals: 'Individus',
+                offlineResults: 'Résultats Locaux',
+                onlineResults: 'Résultats en Ligne',
+                
+                // Détails d'entité
+                parents: 'Superclasses',
+                subclasses: 'Sous-classes',
+                domain: 'Domaine',
+                range: 'Portée',
+                classes: 'Classes',
+                instances: 'Instances',
+                viewOnDBpedia: 'Voir sur DBpedia',
+                
+                // Textes spécifiques à DBpedia
+                dbpediaResource: 'Ressource DBpedia',
+                dbpediaDescription: 'Informations obtenues depuis DBpedia en ligne',
+                dbpediaSource: 'Source: DBpedia Online',
+                localSource: 'Source: Ontologie Locale',
+                
+                // Textes d'erreur
+                error: 'Erreur',
+                searchError: 'Une erreur est survenue lors de la recherche',
+                detailsError: 'Erreur lors du chargement des détails'
+            },
+            de: {
+                // Haupttitel und Texte
+                mainTitle: 'Ontologische Suchmaschine',
+                subtitle: 'Hybridsuche: Lokale Ontologie + DBpedia Online',
+                searchTitle: 'In Ontologie suchen',
+                searchPlaceholder: 'Z.B.: malware, Angriff, Firewall...',
+                searchBtn: 'Suchen',
+                
+                // Filter
+                filterAll: 'Alle',
+                filterClass: 'Klassen',
+                filterProperty: 'Eigenschaften',
+                filterIndividual: 'Individuen',
+                onlineSearchLabel: 'Online-Suche (DBpedia)',
+                
+                // Ergebnisse
+                resultsFound: 'Ergebnisse gefunden',
+                noResults: 'Keine Ergebnisse gefunden',
+                noResultsMsg: 'Versuchen Sie andere Suchbegriffe',
+                loading: 'Suche läuft...',
+                
+                // Statistiken
+                statClasses: 'Klassen',
+                statProperties: 'Eigenschaften',
+                statIndividuals: 'Individuen',
+                offlineResults: 'Lokale Ergebnisse',
+                onlineResults: 'Online-Ergebnisse',
+                
+                // Entitätsdetails
+                parents: 'Superklassen',
+                subclasses: 'Subklassen',
+                domain: 'Domäne',
+                range: 'Bereich',
+                classes: 'Klassen',
+                instances: 'Instanzen',
+                viewOnDBpedia: 'Auf DBpedia anzeigen',
+                
+                // DBpedia-spezifische Texte
+                dbpediaResource: 'DBpedia Ressource',
+                dbpediaDescription: 'Informationen von DBpedia online erhalten',
+                dbpediaSource: 'Quelle: DBpedia Online',
+                localSource: 'Quelle: Lokale Ontologie',
+                
+                // Fehlertexte
+                error: 'Fehler',
+                searchError: 'Bei der Suche ist ein Fehler aufgetreten',
+                detailsError: 'Fehler beim Laden der Details'
+            },
+            it: {
+                // Titoli e testi principali
+                mainTitle: 'Motore di Ricerca Ontologico',
+                subtitle: 'Ricerca Ibrida: Ontologia Locale + DBpedia Online',
+                searchTitle: 'Cerca nell\'Ontologia',
+                searchPlaceholder: 'Es: malware, attacco, firewall...',
+                searchBtn: 'Cerca',
+                
+                // Filtri
+                filterAll: 'Tutti',
+                filterClass: 'Classi',
+                filterProperty: 'Proprietà',
+                filterIndividual: 'Individui',
+                onlineSearchLabel: 'Ricerca Online (DBpedia)',
+                
+                // Risultati
+                resultsFound: 'risultati trovati',
+                noResults: 'Nessun risultato trovato',
+                noResultsMsg: 'Prova con altri termini di ricerca',
+                loading: 'Ricerca in corso...',
+                
+                // Statistiche
+                statClasses: 'Classi',
+                statProperties: 'Proprietà',
+                statIndividuals: 'Individui',
+                offlineResults: 'Risultati Locali',
+                onlineResults: 'Risultati Online',
+                
+                // Dettagli entità
+                parents: 'Superclassi',
+                subclasses: 'Sottoclassi',
+                domain: 'Dominio',
+                range: 'Intervallo',
+                classes: 'Classi',
+                instances: 'Istanze',
+                viewOnDBpedia: 'Visualizza su DBpedia',
+                
+                // Testi specifici per DBpedia
+                dbpediaResource: 'Risorsa DBpedia',
+                dbpediaDescription: 'Informazioni ottenute da DBpedia online',
+                dbpediaSource: 'Fonte: DBpedia Online',
+                localSource: 'Fonte: Ontologia Locale',
+                
+                // Testi di errore
+                error: 'Errore',
+                searchError: 'Si è verificato un errore durante la ricerca',
+                detailsError: 'Errore durante il caricamento dei dettagli'
+            },
+            pt: {
+                // Títulos e textos principais
+                mainTitle: 'Motor de Busca Ontológico',
+                subtitle: 'Busca Híbrida: Ontologia Local + DBpedia Online',
+                searchTitle: 'Buscar na Ontologia',
+                searchPlaceholder: 'Ex: malware, ataque, firewall...',
+                searchBtn: 'Buscar',
+                
+                // Filtros
+                filterAll: 'Todos',
+                filterClass: 'Classes',
+                filterProperty: 'Propriedades',
+                filterIndividual: 'Indivíduos',
+                onlineSearchLabel: 'Busca Online (DBpedia)',
+                
+                // Resultados
+                resultsFound: 'resultados encontrados',
+                noResults: 'Nenhum resultado encontrado',
+                noResultsMsg: 'Tente outros termos de busca',
+                loading: 'Buscando...',
+                
+                // Estatísticas
+                statClasses: 'Classes',
+                statProperties: 'Propriedades',
+                statIndividuals: 'Indivíduos',
+                offlineResults: 'Resultados Locais',
+                onlineResults: 'Resultados Online',
+                
+                // Detalhes da entidade
+                parents: 'Superclasses',
+                subclasses: 'Subclasses',
+                domain: 'Domínio',
+                range: 'Intervalo',
+                classes: 'Classes',
+                instances: 'Instâncias',
+                viewOnDBpedia: 'Ver no DBpedia',
+                
+                // Textos específicos do DBpedia
+                dbpediaResource: 'Recurso DBpedia',
+                dbpediaDescription: 'Informações obtidas do DBpedia online',
+                dbpediaSource: 'Fonte: DBpedia Online',
+                localSource: 'Fonte: Ontologia Local',
+                
+                // Textos de erro
+                error: 'Erro',
+                searchError: 'Ocorreu um erro ao realizar a busca',
+                detailsError: 'Erro ao carregar os detalhes'
             }
         };
 
@@ -743,7 +945,7 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-number">🌐</div>
-                        <div class="stat-label">DBpedia Online</div>
+                        <div class="stat-label">DBpedia (${currentLang.toUpperCase()})</div>
                     </div>
                 `;
                 document.getElementById('stats').innerHTML = statsHtml;
@@ -959,10 +1161,10 @@
         }
 
         function getTypeClass(type) {
-            if (type === 'Clase') return 'type-class';
-            if (type === 'Individuo') return 'type-individual';
-            if (type === 'Propiedad') return 'type-property';
-            if (type === 'DBPedia' || type === 'Recurso DBpedia' || type === 'DBpedia Resource') return 'type-dbpedia';
+            if (type === 'Clase' || type === 'Class' || type === 'Classe' || type === 'Klasse') return 'type-class';
+            if (type === 'Individuo' || type === 'Individual' || type === 'Individu' || type === 'Individuum') return 'type-individual';
+            if (type === 'Propiedad' || type === 'Property' || type === 'Propriété' || type === 'Eigenschaft') return 'type-property';
+            if (type.includes('DBpedia') || type.includes('Recurso') || type.includes('Resource') || type.includes('Ressource')) return 'type-dbpedia';
             return 'type-class';
         }
 
