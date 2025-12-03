@@ -5,6 +5,8 @@ import unicodedata
 import os
 from SPARQLWrapper import SPARQLWrapper, JSON
 import re
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
+import time
 
 app = Flask(__name__, template_folder='templates')
 CORS(app)
@@ -20,6 +22,10 @@ DBPEDIA_ENDPOINTS = {
     'fr': 'https://fr.dbpedia.org/sparql'
 }
 
+# Configuración de timeouts más agresiva
+SPARQL_TIMEOUT = 8  # Reducido de 20 a 8 segundos
+MAX_QUERY_TIME = 10  # Tiempo máximo total por consulta
+
 def load_ontology():
     global ontology
     if os.path.exists(ONTOLOGY_PATH):
@@ -34,23 +40,11 @@ def get_label(entity, lang='es'):
     if hasattr(entity, 'label'):
         labels = entity.label
         if labels:
-            # Buscar primero en el idioma solicitado
             for label in labels:
-                if hasattr(label, 'lang'):
-                    if label.lang == lang:
-                        return str(label)
-                    # Si no encuentra exacto, buscar español para compatibilidad
-                    elif lang != 'es' and label.lang == 'es':
-                        spanish_label = str(label)
-            
-            # Si no encuentra en el idioma solicitado, intentar con español
-            if 'spanish_label' in locals():
-                return spanish_label
-            
-            # Si no hay etiqueta en español, usar la primera disponible
+                if hasattr(label, 'lang') and label.lang == lang:
+                    return str(label)
+            # Fallback: primera etiqueta disponible
             return str(labels[0]) if labels else entity.name
-    
-    # Si no tiene etiqueta, devolver el nombre
     return entity.name
 
 def get_comment(entity, lang='es'):
@@ -58,23 +52,11 @@ def get_comment(entity, lang='es'):
     if hasattr(entity, 'comment'):
         comments = entity.comment
         if comments:
-            # Buscar en el idioma solicitado
             for comment in comments:
-                if hasattr(comment, 'lang'):
-                    if comment.lang == lang:
-                        return str(comment)
-                    # Si no encuentra exacto, buscar español
-                    elif lang != 'es' and comment.lang == 'es':
-                        spanish_comment = str(comment)
-            
-            # Si no encuentra en el idioma solicitado, intentar con español
-            if 'spanish_comment' in locals():
-                return spanish_comment
-            
-            # Si no hay comentario en español, usar la primera disponible
+                if hasattr(comment, 'lang') and comment.lang == lang:
+                    return str(comment)
             return str(comments[0]) if comments else ""
     
-    # Mensajes por defecto según idioma
     default_comments = {
         'es': "Sin descripción disponible",
         'en': "No description available",
@@ -214,247 +196,300 @@ def calculate_relevance(query, label, name, comment, entity_type):
         score += 3
     return score
 
+def execute_sparql_with_timeout(sparql, timeout=SPARQL_TIMEOUT):
+    """Ejecuta una consulta SPARQL con timeout usando ThreadPoolExecutor"""
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(sparql.query)
+        try:
+            return future.result(timeout=timeout)
+        except FuturesTimeoutError:
+            print(f"⏰ Timeout en consulta SPARQL ({timeout}s)")
+            return None
+        except Exception as e:
+            print(f"❌ Error en consulta SPARQL: {e}")
+            return None
+
+def get_simplified_query(query, lang):
+    """Genera consulta SPARQL simplificada y más permisiva"""
+    safe_query = query.replace('"', r'\"').replace("'", r"\'")
+    
+    # Palabras clave de ciberseguridad por idioma
+    cybersec_terms = {
+        'en': 'cyber|security|malware|ransomware|hacker|virus|attack|encryption|phishing|firewall',
+        'es': 'ciber|seguridad|malware|ransomware|hacker|virus|ataque|encriptación|phishing|cortafuegos',
+        'fr': 'cyber|sécurité|malware|rançongiciel|pirate|virus|attaque|chiffrement|hameçonnage|pare-feu'
+    }
+    
+    terms = cybersec_terms.get(lang, cybersec_terms['en'])
+    
+    return f"""
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX dbo: <http://dbpedia.org/ontology/>
+    
+    SELECT DISTINCT ?resource ?label ?abstract WHERE {{
+      {{
+        ?resource rdfs:label ?label .
+        FILTER(LANG(?label) = '{lang}')
+        FILTER(REGEX(LCASE(?label), "{safe_query.lower()}", "i"))
+      }}
+      UNION
+      {{
+        ?resource rdfs:label ?label .
+        FILTER(LANG(?label) = '{lang}')
+        FILTER(REGEX(LCASE(?label), "({terms})", "i"))
+        FILTER(REGEX(LCASE(?label), "{safe_query.lower()[0:3]}", "i"))
+      }}
+      
+      OPTIONAL {{
+        ?resource dbo:abstract ?abstract .
+        FILTER(LANG(?abstract) = '{lang}')
+      }}
+    }}
+    LIMIT 20
+    """
+
 def search_dbpedia_online(query, lang='en', limit=10):
-    """Busca en DBpedia según el idioma seleccionado - OPTIMIZADA y CORREGIDA"""
+    """Búsqueda optimizada en DBpedia con timeout agresivo"""
+    start_time = time.time()
+    
     try:
-        # Seleccionar endpoint según idioma
-        endpoint = DBPEDIA_ENDPOINTS.get(lang, DBPEDIA_ENDPOINTS['en'])
-        sparql = SPARQLWrapper(endpoint)
-        sparql.addCustomHttpHeader("User-Agent", "CybersecuritySearchBot/1.0")
-        sparql.setTimeout(15)  # Timeout más corto para mejor respuesta
+        print(f"🔍 Búsqueda online: '{query}' en {lang}")
         
-        # Consultas diferentes por idioma para mejor precisión
-        if lang == 'en':
-            # Consulta específica para inglés - menos restrictiva
-            search_query = f"""
-            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            PREFIX dbo: <http://dbpedia.org/ontology/>
-            PREFIX dct: <http://purl.org/dc/terms/>
-            PREFIX dbp: <http://dbpedia.org/property/>
-            
-            SELECT DISTINCT ?resource ?label ?abstract WHERE {{
-              {{
-                ?resource rdfs:label ?label .
-                FILTER(LANG(?label) = 'en' && 
-                      (CONTAINS(LCASE(?label), "{query.lower()}") ||
-                       CONTAINS(LCASE(?label), "{query.lower().replace(' ', '_')}")))
-                
-                # Filtro más flexible para inglés
-                OPTIONAL {{ 
-                  ?resource dct:subject ?category .
-                }}
-                
-                # Priorizar recursos con categorías relacionadas con seguridad
-                OPTIONAL {{ 
-                  ?resource dbo:abstract ?abstract . 
-                  FILTER(LANG(?abstract) = 'en') 
-                }}
-                
-                # Ordenar para que aparezcan primero los más relevantes
-                BIND(IF(BOUND(?category) && (
-                  CONTAINS(LCASE(STR(?category)), "cyber") ||
-                  CONTAINS(LCASE(STR(?category)), "security") ||
-                  CONTAINS(LCASE(STR(?category)), "malware") ||
-                  CONTAINS(LCASE(STR(?category)), "ransomware") ||
-                  CONTAINS(LCASE(STR(?category)), "hacker") ||
-                  CONTAINS(LCASE(STR(?category)), "computer_virus") ||
-                  CONTAINS(LCASE(STR(?category)), "information_security") ||
-                  CONTAINS(LCASE(STR(?category)), "encryption")
-                ), 1, 0) AS ?hasSecurityCategory)
-              }}
-            }}
-            ORDER BY DESC(?hasSecurityCategory) ?label
-            LIMIT {limit}
-            """
-        elif lang == 'es':
-            # Consulta para español
-            search_query = f"""
-            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            PREFIX dbo: <http://dbpedia.org/ontology/>
-            PREFIX dct: <http://purl.org/dc/terms/>
-            
-            SELECT DISTINCT ?resource ?label ?abstract WHERE {{
-              ?resource rdfs:label ?label .
-              FILTER(LANG(?label) = 'es' && CONTAINS(LCASE(?label), "{query.lower()}"))
-              
-              OPTIONAL {{ 
-                ?resource dct:subject ?category .
-                FILTER(
-                  CONTAINS(LCASE(STR(?category)), "ciber") ||
-                  CONTAINS(LCASE(STR(?category)), "seguridad") ||
-                  CONTAINS(LCASE(STR(?category)), "malware") ||
-                  CONTAINS(LCASE(STR(?category)), "ransomware") ||
-                  CONTAINS(LCASE(STR(?category)), "hacker") ||
-                  CONTAINS(LCASE(STR(?category)), "virus_informático")
-                )
-              }}
-              
-              OPTIONAL {{ 
-                ?resource dbo:abstract ?abstract . 
-                FILTER(LANG(?abstract) = 'es') 
-              }}
-            }}
-            LIMIT {limit}
-            """
-        else:  # francés
-            search_query = f"""
-            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            PREFIX dbo: <http://dbpedia.org/ontology/>
-            PREFIX dct: <http://purl.org/dc/terms/>
-            
-            SELECT DISTINCT ?resource ?label ?abstract WHERE {{
-              ?resource rdfs:label ?label .
-              FILTER(LANG(?label) = 'fr' && CONTAINS(LCASE(?label), "{query.lower()}"))
-              
-              OPTIONAL {{ 
-                ?resource dct:subject ?category .
-                FILTER(
-                  CONTAINS(LCASE(STR(?category)), "cyber") ||
-                  CONTAINS(LCASE(STR(?category)), "sécurité") ||
-                  CONTAINS(LCASE(STR(?category)), "logiciel_malveillant") ||
-                  CONTAINS(LCASE(STR(?category)), "rançongiciel") ||
-                  CONTAINS(LCASE(STR(?category)), "pirate")
-                )
-              }}
-              
-              OPTIONAL {{ 
-                ?resource dbo:abstract ?abstract . 
-                FILTER(LANG(?abstract) = 'fr') 
-              }}
-            }}
-            LIMIT {limit}
-            """
+        # Seleccionar endpoint
+        endpoint = DBPEDIA_ENDPOINTS.get(lang, DBPEDIA_ENDPOINTS['en'])
+        
+        sparql = SPARQLWrapper(endpoint)
+        sparql.addCustomHttpHeader("User-Agent", "CybersecuritySearchBot/3.0")
+        sparql.setTimeout(SPARQL_TIMEOUT)
+        
+        # Usar consulta simplificada
+        search_query = get_simplified_query(query, lang)
         
         sparql.setQuery(search_query)
         sparql.setReturnFormat(JSON)
         
-        try:
-            results = sparql.query().convert()
-            print(f"✅ Consulta SPARQL exitosa ({lang}): {len(results['results']['bindings'])} resultados")
-        except Exception as query_error:
-            print(f"⚠️ Error en consulta SPARQL ({lang}): {query_error}")
-            # Consulta de respaldo MUY simple
-            backup_query = f"""
-            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-            PREFIX dbo: <http://dbpedia.org/ontology/>
-            
-            SELECT DISTINCT ?resource ?label ?abstract WHERE {{
-              ?resource rdfs:label ?label .
-              FILTER(LANG(?label) = '{lang}' && CONTAINS(LCASE(?label), "{query.lower()}"))
-              OPTIONAL {{ 
-                ?resource dbo:abstract ?abstract . 
-                FILTER(LANG(?abstract) = '{lang}') 
-              }}
-            }}
-            LIMIT {limit}
-            """
-            sparql.setQuery(backup_query)
-            results = sparql.query().convert()
-            print(f"✅ Usando consulta de respaldo ({lang}): {len(results['results']['bindings'])} resultados")
+        # Ejecutar con timeout
+        response = execute_sparql_with_timeout(sparql, timeout=SPARQL_TIMEOUT)
         
+        if response is None:
+            print(f"⚠️ Timeout o error en {lang}, usando fallback")
+            return get_fallback_results(query, lang)
+        
+        try:
+            raw_results = response.convert()["results"]["bindings"]
+            print(f"📊 Resultados obtenidos: {len(raw_results)}")
+        except Exception as e:
+            print(f"❌ Error parseando respuesta: {e}")
+            return get_fallback_results(query, lang)
+        
+        # Procesar resultados
         formatted_results = []
         seen_resources = set()
         
-        for result in results["results"]["bindings"]:
-            resource_uri = result["resource"]["value"]
-            
-            if resource_uri in seen_resources:
-                continue
-            seen_resources.add(resource_uri)
-            
-            resource_name = resource_uri.split("/")[-1]
-            
-            comment = result.get("abstract", {}).get("value", "")
-            if not comment:
-                comment_msgs = {
-                    'es': f"Recurso de ciberseguridad relacionado con '{query}'",
-                    'en': f"Cybersecurity resource related to '{query}'",
-                    'fr': f"Ressource de cybersécurité liée à '{query}'"
+        for result in raw_results[:limit]:
+            try:
+                resource_uri = result["resource"]["value"]
+                
+                if resource_uri in seen_resources:
+                    continue
+                seen_resources.add(resource_uri)
+                
+                resource_name = resource_uri.split("/")[-1]
+                label = result["label"]["value"]
+                
+                # Obtener comentario
+                comment = result.get("abstract", {}).get("value", "")
+                if not comment:
+                    comment = get_default_comment(query, lang)
+                else:
+                    if len(comment) > 200:
+                        comment = comment[:197] + "..."
+                
+                # Construir enlace externo
+                external_link = get_external_link(resource_name, lang)
+                
+                # Calcular relevancia
+                relevance = calculate_online_relevance(query, label, comment)
+                
+                formatted_result = {
+                    'name': resource_name,
+                    'label': label,
+                    'type': 'DBPedia',
+                    'comment': comment,
+                    'source': 'online',
+                    'uri': resource_uri,
+                    'relevance': relevance,
+                    'external_link': external_link,
+                    'translations': {
+                        'type': {
+                            'es': 'Recurso DBpedia',
+                            'en': 'DBPedia Resource',
+                            'fr': 'Ressource DBpedia'
+                        },
+                        'comment': comment,
+                        'view_external': {
+                            'es': 'Ver en DBpedia',
+                            'en': 'View on DBpedia',
+                            'fr': 'Voir sur DBpedia'
+                        }
+                    }
                 }
-                comment = comment_msgs.get(lang, comment_msgs['en'])
-            else:
-                if len(comment) > 200:
-                    comment = comment[:197] + "..."
+                formatted_results.append(formatted_result)
+                    
+            except Exception as e:
+                print(f"⚠️ Error procesando resultado: {e}")
+                continue
+        
+        elapsed = time.time() - start_time
+        print(f"✅ Búsqueda online ({lang}): {len(formatted_results)} resultados en {elapsed:.2f}s")
+        
+        # Si hay pocos resultados, añadir fallback
+        if len(formatted_results) < 3:
+            fallback = get_fallback_results(query, lang)
+            formatted_results.extend(fallback[:5])
+        
+        return formatted_results
+        
+    except Exception as e:
+        elapsed = time.time() - start_time
+        print(f"❌ Error crítico en búsqueda online ({lang}) después de {elapsed:.2f}s: {e}")
+        return get_fallback_results(query, lang)
+
+def get_default_comment(query, lang):
+    """Devuelve comentario por defecto según idioma"""
+    comments = {
+        'es': f"Recurso de ciberseguridad relacionado con '{query}'",
+        'en': f"Cybersecurity resource related to '{query}'",
+        'fr': f"Ressource de cybersécurité liée à '{query}'"
+    }
+    return comments.get(lang, comments['en'])
+
+def get_external_link(resource_name, lang):
+    """Construye el enlace externo según el idioma"""
+    if lang == 'es':
+        return f"https://es.dbpedia.org/page/{resource_name}"
+    elif lang == 'fr':
+        return f"https://fr.dbpedia.org/page/{resource_name}"
+    else:
+        return f"http://dbpedia.org/page/{resource_name}"
+
+def calculate_online_relevance(query, label, comment):
+    """Calcula relevancia para resultados online"""
+    score = 0
+    query_lower = query.lower()
+    label_lower = label.lower()
+    comment_lower = comment.lower() if comment else ""
+    
+    if query_lower == label_lower:
+        score += 100
+    elif query_lower in label_lower:
+        score += 60
+    
+    if comment and query_lower in comment_lower:
+        score += 30
+    
+    security_terms = ['security', 'cyber', 'malware', 'ransomware', 'hacker', 
+                     'seguridad', 'ciber', 'sécurité']
+    for term in security_terms:
+        if term in label_lower or term in comment_lower:
+            score += 10
+    
+    score -= len(label_lower) * 0.05
+    
+    return max(10, min(score, 100))
+
+def get_fallback_results(query, lang):
+    """Devuelve resultados de fallback mejorados y más numerosos"""
+    print(f"🔄 Usando resultados de fallback para {lang}: '{query}'")
+    
+    # Recursos conocidos expandidos
+    known_resources = {
+        'es': [
+            ('Malware', 'Software malicioso diseñado para dañar sistemas'),
+            ('Ciberseguridad', 'Protección de sistemas informáticos y datos'),
+            ('Ransomware', 'Malware que cifra archivos y exige rescate'),
+            ('Phishing', 'Ataque de ingeniería social para robar información'),
+            ('Cortafuegos', 'Sistema de seguridad de red'),
+            ('Encriptación', 'Proceso de codificación de información'),
+            ('Hacker', 'Persona experta en sistemas informáticos'),
+            ('Virus', 'Programa malicioso que se replica'),
+            ('Spyware', 'Software espía que recopila información'),
+            ('DDoS', 'Ataque de denegación de servicio distribuido'),
+            ('Vulnerabilidad', 'Debilidad en sistemas de seguridad'),
+            ('Autenticación', 'Verificación de identidad de usuarios')
+        ],
+        'en': [
+            ('Malware', 'Malicious software designed to harm systems'),
+            ('Cybersecurity', 'Protection of computer systems and data'),
+            ('Ransomware', 'Malware that encrypts files for ransom'),
+            ('Phishing', 'Social engineering attack to steal information'),
+            ('Firewall', 'Network security system'),
+            ('Encryption', 'Process of encoding information'),
+            ('Hacker', 'Person skilled in computer systems'),
+            ('Virus', 'Malicious self-replicating program'),
+            ('Spyware', 'Software that secretly gathers information'),
+            ('DDoS', 'Distributed denial-of-service attack'),
+            ('Vulnerability', 'Weakness in security systems'),
+            ('Authentication', 'Verification of user identity')
+        ],
+        'fr': [
+            ('Logiciel_malveillant', 'Logiciel malveillant conçu pour endommager les systèmes'),
+            ('Cybersécurité', 'Protection des systèmes informatiques et des données'),
+            ('Rançongiciel', 'Logiciel malveillant qui chiffre les fichiers'),
+            ('Hameçonnage', "Attaque d'ingénierie sociale pour voler des informations"),
+            ('Pare-feu', 'Système de sécurité réseau'),
+            ('Chiffrement', "Processus d'encodage de l'information"),
+            ('Pirate_informatique', 'Personne experte en systèmes informatiques'),
+            ('Virus', 'Programme malveillant auto-répliquant'),
+            ('Logiciel_espion', 'Logiciel qui collecte secrètement des informations'),
+            ('DDoS', 'Attaque par déni de service distribué'),
+            ('Vulnérabilité', 'Faiblesse dans les systèmes de sécurité'),
+            ('Authentification', "Vérification de l'identité des utilisateurs")
+        ]
+    }
+    
+    resources = known_resources.get(lang, known_resources['en'])
+    query_lower = query.lower()
+    
+    results = []
+    for name, description in resources:
+        # Buscar coincidencias más flexibles
+        if (query_lower in name.lower() or 
+            query_lower in description.lower() or
+            any(q in name.lower() for q in query_lower.split())):
             
-            # Construir enlace según el idioma
-            if lang == 'es':
-                external_link = f"https://es.dbpedia.org/page/{resource_name}"
-            elif lang == 'fr':
-                external_link = f"https://fr.dbpedia.org/page/{resource_name}"
-            else:
-                external_link = f"http://dbpedia.org/page/{resource_name}"
-            
-            formatted_result = {
-                'name': resource_name,
-                'label': result["label"]["value"],
+            results.append({
+                'name': name,
+                'label': name.replace('_', ' '),
                 'type': 'DBPedia',
-                'comment': comment,
+                'comment': description,
                 'source': 'online',
-                'uri': resource_uri,
-                'relevance': 45,
-                'external_link': external_link,
+                'uri': f'http://dbpedia.org/resource/{name}',
+                'relevance': 50,
+                'external_link': get_external_link(name, lang),
                 'translations': {
                     'type': {
                         'es': 'Recurso DBpedia',
                         'en': 'DBPedia Resource',
                         'fr': 'Ressource DBpedia'
                     },
-                    'comment': comment,
+                    'comment': description,
                     'view_external': {
                         'es': 'Ver en DBpedia',
                         'en': 'View on DBpedia',
                         'fr': 'Voir sur DBpedia'
                     }
                 }
-            }
-            formatted_results.append(formatted_result)
-        
-        print(f"✅ Búsqueda online ({lang}): {len(formatted_results)} resultados procesados")
-        return formatted_results
-        
-    except Exception as e:
-        print(f"❌ Error crítico en búsqueda online DBpedia ({lang}): {e}")
-        # Devolver resultados de ejemplo si todo falla
-        if lang == 'en':
-            return [
-                {
-                    'name': 'Malware',
-                    'label': 'Malware',
-                    'type': 'DBPedia',
-                    'comment': 'Software designed to harm computer systems',
-                    'source': 'online',
-                    'uri': 'http://dbpedia.org/resource/Malware',
-                    'relevance': 45,
-                    'external_link': 'http://dbpedia.org/page/Malware',
-                    'translations': {
-                        'type': {'es': 'Recurso DBpedia', 'en': 'DBPedia Resource', 'fr': 'Ressource DBpedia'},
-                        'comment': 'Software designed to harm computer systems',
-                        'view_external': {'es': 'Ver en DBpedia', 'en': 'View on DBpedia', 'fr': 'Voir sur DBpedia'}
-                    }
-                },
-                {
-                    'name': 'Ransomware',
-                    'label': 'Ransomware',
-                    'type': 'DBPedia',
-                    'comment': 'Type of malware that blocks access to data until ransom is paid',
-                    'source': 'online',
-                    'uri': 'http://dbpedia.org/resource/Ransomware',
-                    'relevance': 45,
-                    'external_link': 'http://dbpedia.org/page/Ransomware',
-                    'translations': {
-                        'type': {'es': 'Recurso DBpedia', 'en': 'DBPedia Resource', 'fr': 'Ressource DBpedia'},
-                        'comment': 'Type of malware that blocks access to data until ransom is paid',
-                        'view_external': {'es': 'Ver en DBpedia', 'en': 'View on DBpedia', 'fr': 'Voir sur DBpedia'}
-                    }
-                }
-            ]
-        return []
+            })
+    
+    return results
 
 def search_hybrid(query, lang='es', filter_type='all', online_search=True):
-    """Búsqueda híbrida: local + online"""
+    """Búsqueda híbrida: local + online con timeout total"""
+    start_time = time.time()
     all_results = []
     
-    # BÚSQUEDA OFFLINE (Local)
+    # BÚSQUEDA OFFLINE (Local) - rápida
     offline_results = []
     
     if filter_type == 'all' or filter_type == 'class':
@@ -468,13 +503,23 @@ def search_hybrid(query, lang='es', filter_type='all', online_search=True):
     
     all_results.extend(offline_results)
     
-    # BÚSQUEDA ONLINE (DBpedia)
+    # BÚSQUEDA ONLINE (DBpedia) - con timeout
     if online_search:
-        online_results = search_dbpedia_online(query, lang, limit=15)
-        all_results.extend(online_results)
+        elapsed = time.time() - start_time
+        remaining_time = MAX_QUERY_TIME - elapsed
+        
+        if remaining_time > 2:
+            online_results = search_dbpedia_online(query, lang, limit=15)
+            all_results.extend(online_results)
+        else:
+            print(f"⏰ Tiempo agotado, saltando búsqueda online")
+            all_results.extend(get_fallback_results(query, lang)[:5])
     
     # Ordenar por relevancia
     all_results.sort(key=lambda x: x.get('relevance', 0), reverse=True)
+    
+    total_time = time.time() - start_time
+    print(f"⏱️ Búsqueda total completada en {total_time:.2f}s")
     
     return all_results
 
@@ -531,27 +576,12 @@ def search():
         'results': results_page
     })
 
-def translate_type(type_str, dest_lang='en'):
-    """Traduce tipos de entidades"""
-    translations = {
-        'Clase': {'en': 'Class', 'fr': 'Classe'},
-        'Propiedad': {'en': 'Property', 'fr': 'Propriété'},
-        'Individuo': {'en': 'Individual', 'fr': 'Individu'},
-        'DBPedia': {'en': 'DBPedia Resource', 'fr': 'Ressource DBpedia'},
-        'Recurso DBpedia': {'en': 'DBPedia Resource', 'fr': 'Ressource DBpedia'}
-    }
-    
-    if type_str in translations:
-        return translations[type_str].get(dest_lang, type_str)
-    return type_str
-
 @app.route('/api/details/<entity_name>', methods=['GET'])
 def get_details(entity_name):
     lang = request.args.get('lang', 'es')
     source = request.args.get('source', 'offline')
     
     if source == 'online':
-        # Para recursos online, devolver información básica
         type_translations = {
             'es': 'Recurso DBpedia',
             'en': 'DBpedia Resource',
@@ -582,26 +612,22 @@ def get_details(entity_name):
             }
         })
     
-    # Lógica para detalles offline
     if not ontology:
         return jsonify({'error': 'Ontología no cargada'}), 500
     
     entity = None
     
-    # Buscar en clases
     for cls in ontology.classes():
         if cls.name == entity_name:
             entity = cls
             break
     
-    # Buscar en propiedades
     if not entity:
         for prop in list(ontology.object_properties()) + list(ontology.data_properties()):
             if prop.name == entity_name:
                 entity = prop
                 break
     
-    # Buscar en individuos
     if not entity:
         for ind in ontology.individuals():
             if ind.name == entity_name:
@@ -611,7 +637,6 @@ def get_details(entity_name):
     if not entity:
         return jsonify({'error': 'Entidad no encontrada'}), 404
     
-    # Construir respuesta detallada
     details = {
         'name': entity.name,
         'label': get_label(entity, lang),
@@ -633,7 +658,6 @@ def get_details(entity_name):
         }
     }
     
-    # Información específica según el tipo
     if isinstance(entity, type):
         details['type'] = 'Clase'
         details['translations']['type'] = {
@@ -678,7 +702,6 @@ def get_stats():
     if not ontology:
         return jsonify({'error': 'Ontología no cargada'}), 500
     
-    # Estadísticas locales
     local_stats = {
         'classes': len(list(ontology.classes())),
         'object_properties': len(list(ontology.object_properties())),
